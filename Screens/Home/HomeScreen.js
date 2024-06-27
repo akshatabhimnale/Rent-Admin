@@ -1,21 +1,35 @@
-import React, { useState, useRef,useEffect } from 'react';
-import { Animated, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, Easing } from 'react-native';
-import { Bars3CenterLeftIcon, BellIcon } from 'react-native-heroicons/solid';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Animated,
+  KeyboardAvoidingView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+  Easing,
+} from "react-native";
+import { Bars3CenterLeftIcon, BellIcon } from "react-native-heroicons/solid";
+import { useNavigation } from "@react-navigation/native";
 
 const propStyle = (percent) => {
   const base_degrees = -135;
-  const rotateBy = base_degrees + (percent * 3.6);
+  const rotateBy = base_degrees + percent * 3.6;
   return {
-    transform: [{ rotateZ: `${rotateBy}deg` }]
+    transform: [{ rotateZ: `${rotateBy}deg` }],
   };
 };
 
 const renderThirdLayer = (percent) => {
   if (percent > 50) {
-    return <View style={[styles.secondProgressLayer, propStyle((percent - 50))]}></View>
+    return (
+      <View
+        style={[styles.secondProgressLayer, propStyle(percent - 50)]}
+      ></View>
+    );
   } else {
-    return <View style={styles.offsetLayer}></View>
+    return <View style={styles.offsetLayer}></View>;
   }
 };
 
@@ -26,8 +40,6 @@ const HomeScreen = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarAnim = useRef(new Animated.Value(-250)).current;
 
-
-  
   const toggleSidebar = () => {
     if (isSidebarOpen) {
       Animated.timing(sidebarAnim, {
@@ -61,29 +73,122 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [buildingsResponse, flatsResponse, flatsOnRentResponse, emptyFlatsResponse, rentReceivedResponse, rentPendingResponse] = await Promise.all([
-          fetch('https://stock-management-system-server.onrender.com/admin/api/get-societies'),
-          fetch('https://stock-management-system-server.onrender.com/admin/api/get-flats'),
-          fetch('https://stock-management-system-server.onrender.com/admin/api/get-flatsOnRent'),
-          fetch('https://stock-management-system-server.onrender.com/admin/api/get-empty-flats'),
-          fetch('https://stock-management-system-server.onrender.com/admin/api/get-monthly-rent-received'),
-          fetch('https://stock-management-system-server.onrender.com/admin/api/get-monthly-rent-pending'),
+        const [
+          societiesResponse,
+          flatsResponse,
+          flatsOnRentResponse,
+          emptyFlatsResponse,
+          rentReceivedResponse,
+          rentPendingResponse,
+        ] = await Promise.all([
+          fetch(
+            "https://stock-management-system-server-6mja.onrender.com/api/societies/count"
+          ),
+          fetch(
+            "https://stock-management-system-server-6mja.onrender.com/api/flats/count"
+          ),
+          fetch(
+            "https://stock-management-system-server-6mja.onrender.com/api/flats/on-rent"
+          ),
+          fetch(
+            "https://stock-management-system-server-6mja.onrender.com/api/flats/vaccant"
+          ),
+          fetch(
+            "https://stock-management-system-server-6mja.onrender.com/api/tenants/rent-received"
+          ),
+          fetch(
+            "https://stock-management-system-server-6mja.onrender.com/api/tenants/rent-pending"
+          ),
         ]);
 
-        const buildingsData = await buildingsResponse.json();
-        const flatsData = await flatsResponse.json();
-        const flatsOnRentData = await flatsOnRentResponse.json();
-        const emptyFlatsData = await emptyFlatsResponse.json();
-        const rentReceivedData = await rentReceivedResponse.json();
-        const rentPendingData = await rentPendingResponse.json();
+        const societiesText = await societiesResponse.text();
+        const flatsText = await flatsResponse.text();
+        const flatsOnRentText = await flatsOnRentResponse.text();
+        const emptyFlatsText = await emptyFlatsResponse.text();
+        const rentReceivedText = await rentReceivedResponse.text();
+        const rentPendingText = await rentPendingResponse.text();
+
+        console.log("societiesText:", societiesText);
+        console.log("flatsText:", flatsText);
+        console.log("flatsOnRentText:", flatsOnRentText);
+        console.log("emptyFlatsText:", emptyFlatsText);
+        console.log("rentReceivedText:", rentReceivedText);
+        console.log("rentPendingText:", rentPendingText);
+       
+        const societiesData = JSON.parse(societiesText);
+        const flatsData = JSON.parse(flatsText);
+        const flatsOnRentData = JSON.parse(flatsOnRentText);
+        const emptyFlatsData = JSON.parse(emptyFlatsText);
+        const rentReceivedData = JSON.parse(rentReceivedText);
+        const rentPendingData = JSON.parse(rentPendingText);
 
         setBlocks([
-          { key: 1, label: "Total Buildings", value: buildingsData.totalBuildings, maxValue: 10, percent: 100, style: styles.block1, screen: 'Totalbuildings' },
-          { key: 2, label: "Total Flat/Rooms", value: flatsData.totalFlats, maxValue: 200, percent: 100, style: styles.block2, screen: 'Room' },
-          { key: 3, label: "Flat On Rent", value: flatsOnRentData.noOfFlatsOnRent, maxValue: 200, percent: (flatsOnRentData.noOfFlatsOnRent / flatsData.totalFlats) * 100, style: styles.block3, screen: 'Flats' },
-          { key: 4, label: "Empty Flat", value: emptyFlatsData.noOfFlatsEmpty, maxValue: 200, percent: (emptyFlatsData.noOfFlatsEmpty / flatsData.totalFlats) * 100, style: styles.block4, screen: 'Emptyflats' },
-          { key: 5, label: "Pending Status", value: rentPendingData.noOfFlatsRentPending, maxValue: 10, percent: (rentPendingData.noOfFlatsRentPending / flatsOnRentData.noOfFlatsOnRent) * 100, style: styles.block5, screen: 'Pendingstatus' },
-          { key: 6, label: "Month Rent Received", value: rentReceivedData.noOfFlatsRentReceived, maxValue: 10, percent: (rentReceivedData.noOfFlatsRentReceived / flatsOnRentData.noOfFlatsOnRent) * 100, style: styles.block6, screen: 'Recieverent' }
+          {
+            key: 1,
+            label: "Total Buildings",
+            value: societiesData.totalSocieties,
+            maxValue: 10,
+            percent: 100,
+            style: styles.block1,
+            screen: "TotalBuildings",
+          },
+          {
+            key: 2,
+            label: "Total Flat/Rooms",
+            value: flatsData.totalFlats,
+            maxValue: 200,
+            percent: 100,
+            style: styles.block2,
+            screen: "Room",
+          },
+          {
+            key: 3,
+            label: "Flat On Rent",
+            value: flatsOnRentData.noOfFlatsOnRent,
+            maxValue: 200,
+            percent: (
+              (flatsOnRentData.noOfFlatsOnRent / flatsData.totalFlats) *
+              100
+            ).toFixed(2),
+            style: styles.block3,
+            screen: "Flats",
+          },
+          {
+            key: 4,
+            label: "Empty Flat",
+            value: emptyFlatsData.noOfVaccantFlats,
+            maxValue: 200,
+            percent: (
+              ( emptyFlatsData.noOfVaccantFlats / flatsData.totalFlats) *
+              100
+            ).toFixed(2),
+            style: styles.block4,
+            screen: "EmptyFlats",
+          },
+          {
+            key: 5,
+            label: "Pending Status",
+            value: rentPendingData.noOfFlatsRentPending,
+            maxValue: 10,
+            percent:
+              (rentPendingData.noOfFlatsRentPending /
+                flatsOnRentData.noOfFlatsOnRent) *
+              100,
+            style: styles.block5,
+            screen: "PendingStatus",
+          },
+          {
+            key: 6,
+            label: "Month Rent Received",
+            value: rentReceivedData.noOfFlatsRentReceived,
+            maxValue: 10,
+            percent:
+              (rentReceivedData.noOfFlatsRentReceived /
+                flatsOnRentData.noOfFlatsOnRent) *
+              100,
+            style: styles.block6,
+            screen: "ReceiveRent",
+          },
         ]);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -94,12 +199,60 @@ const HomeScreen = () => {
   }, []);
 
   const [blocks, setBlocks] = useState([
-    { key: 1, label: "Total Buildings", value: 0, maxValue: 10, percent: 0, style: styles.block1, screen: 'Totalbuildings' },
-    { key: 2, label: "Total Flat/Rooms", value: 0, maxValue: 200, percent: 0, style: styles.block2, screen: 'Room' },
-    { key: 3, label: "Flat On Rent", value: 0, maxValue: 200, percent: 0, style: styles.block3, screen: 'Flats' },
-    { key: 4, label: "Empty Flat", value: 0, maxValue: 200, percent: 0, style: styles.block4, screen: 'Emptyflats' },
-    { key: 5, label: "Pending Status", value: 0, maxValue: 10, percent: 0, style: styles.block5, screen: 'Pendingstatus' },
-    { key: 6, label: "Month Rent Received", value: 0, maxValue: 10, percent: 0, style: styles.block6, screen: 'Recieverent' }
+    {
+      key: 1,
+      label: "Total Buildings",
+      value: 0,
+      maxValue: 10,
+      percent: 0,
+      style: styles.block1,
+      screen: "Totalbuildings",
+    },
+    {
+      key: 2,
+      label: "Total Flat/Rooms",
+      value: 0,
+      maxValue: 200,
+      percent: 0,
+      style: styles.block2,
+      screen: "Room",
+    },
+    {
+      key: 3,
+      label: "Flat On Rent",
+      value: 0,
+      maxValue: 200,
+      percent: 0,
+      style: styles.block3,
+      screen: "Flats",
+    },
+    {
+      key: 4,
+      label: "Empty Flat",
+      value: 0,
+      maxValue: 200,
+      percent: 0,
+      style: styles.block4,
+      screen: "Emptyflats",
+    },
+    {
+      key: 5,
+      label: "Pending Status",
+      value: 0,
+      maxValue: 10,
+      percent: 0,
+      style: styles.block5,
+      screen: "Pendingstatus",
+    },
+    {
+      key: 6,
+      label: "Month Rent Received",
+      value: 0,
+      maxValue: 10,
+      percent: 0,
+      style: styles.block6,
+      screen: "Recieverent",
+    },
   ]);
 
   const handleBlockPressIn = (blockNumber) => {
@@ -124,7 +277,11 @@ const HomeScreen = () => {
     <KeyboardAvoidingView style={{ flex: 1 }}>
       <View style={styles.header}>
         <TouchableOpacity onPress={toggleSidebar}>
-          <Bars3CenterLeftIcon color="black" size={30} style={{ marginRight: 10 }} />
+          <Bars3CenterLeftIcon
+            color="black"
+            size={30}
+            style={{ marginRight: 10 }}
+          />
         </TouchableOpacity>
         <BellIcon color="black" size={30} />
       </View>
@@ -136,61 +293,69 @@ const HomeScreen = () => {
       )}
 
       <Animated.View style={[styles.sidebar, { left: sidebarAnim }]}>
-        <View style={{alignItems: 'center', marginTop: 40, backgroundColor: 'black', padding: 10, width: '100%'}}> 
-          <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}}>
-             MENU
+        <View
+          style={{
+            alignItems: "center",
+            marginTop: 40,
+            backgroundColor: "black",
+            padding: 10,
+            width: "100%",
+          }}
+        >
+          <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
+            MENU
           </Text>
         </View>
         <TouchableOpacity
-          onPress={() => handleSidebarItemPress('Manage')}
+          onPress={() => handleSidebarItemPress("Manage")}
           style={[
             styles.sidebarItem,
-            activeNavItem === 'Manage' && styles.activeSidebarItem,
+            activeNavItem === "Manage" && styles.activeSidebarItem,
           ]}
         >
           <Text style={styles.sidebarText}>Manage Property</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => handleSidebarItemPress('Tenant')}
+          onPress={() => handleSidebarItemPress("Tenant")}
           style={[
             styles.sidebarItem,
-            activeNavItem === 'Tenant' && styles.activeSidebarItem,
+            activeNavItem === "Tenant" && styles.activeSidebarItem,
           ]}
         >
           <Text style={styles.sidebarText}>Tenant Details</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => handleSidebarItemPress('Expense')}
+          onPress={() => handleSidebarItemPress("Expense")}
           style={[
             styles.sidebarItem,
-            activeNavItem === 'Expense' && styles.activeSidebarItem,
+            activeNavItem === "Expense" && styles.activeSidebarItem,
           ]}
         >
           <Text style={styles.sidebarText}>Expenses</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => handleSidebarItemPress('Report')}
+          onPress={() => handleSidebarItemPress("Report")}
           style={[
             styles.sidebarItem,
-            activeNavItem === 'Report' && styles.activeSidebarItem,
+            activeNavItem === "Report" && styles.activeSidebarItem,
           ]}
         >
           <Text style={styles.sidebarText}>Report</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => handleSidebarItemPress('Logout')}
+          onPress={() => handleSidebarItemPress("Logout")}
           style={[
             styles.sidebarItem,
-            activeNavItem === 'Logout' && styles.activeSidebarItem,
+            activeNavItem === "Logout" && styles.activeSidebarItem,
           ]}
         >
           <Text style={styles.sidebarText}>Logout</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => handleSidebarItemPress('PageF')}
+          onPress={() => handleSidebarItemPress("PageF")}
           style={[
             styles.sidebarItem,
-            activeNavItem === 'PageF' && styles.activeSidebarItem,
+            activeNavItem === "PageF" && styles.activeSidebarItem,
           ]}
         >
           <Text style={styles.sidebarText}>Page F</Text>
@@ -203,7 +368,7 @@ const HomeScreen = () => {
             <Text style={styles.addtext}>Admin Dashboard</Text>
           </View>
 
-          {blocks.map(block => {
+          {blocks.map((block) => {
             let firstProgressLayerStyle;
             if (block.percent > 50) {
               firstProgressLayerStyle = propStyle(50);
@@ -216,15 +381,22 @@ const HomeScreen = () => {
                 key={block.key}
                 style={[
                   styles.block,
-                  hoveredBlock === block.key ? styles.hoveredBlock : block.style,
+                  hoveredBlock === block.key
+                    ? styles.hoveredBlock
+                    : block.style,
                 ]}
-                onPress={() => handleBlockPress(block.screen,block.screenData)}
+                onPress={() => handleBlockPress(block.screen, block.screenData)}
                 onPressIn={() => handleBlockPressIn(block.key)}
                 onPressOut={handleBlockPressOut}
               >
                 <View style={styles.spinnerContainer}>
                   <View style={styles.cont}>
-                    <View style={[styles.firstProgressLayer, firstProgressLayerStyle]}></View>
+                    <View
+                      style={[
+                        styles.firstProgressLayer,
+                        firstProgressLayerStyle,
+                      ]}
+                    ></View>
                     {renderThirdLayer(block.percent)}
                     <Text style={styles.display}>{block.percent}%</Text>
                   </View>
@@ -272,7 +444,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 15,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   addtext: {
     fontSize: 25,
@@ -316,52 +488,52 @@ const styles = StyleSheet.create({
   },
   spinnerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   textContainer: {
     flex: 2,
-    alignItems: 'flex-end',
-    color:'white',
+    alignItems: "flex-end",
+    color: "white",
   },
   cont: {
     width: 100,
     height: 100,
     borderWidth: 10,
     borderRadius: 60,
-    borderColor: '#FAF9F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderLeftColor: 'white',
-    borderBottomColor: 'white',
-    borderRightColor: '#3498db',
-    borderTopColor: '#3498db',
+    borderColor: "#FAF9F6",
+    justifyContent: "center",
+    alignItems: "center",
+    borderLeftColor: "white",
+    borderBottomColor: "white",
+    borderRightColor: "#3498db",
+    borderTopColor: "#3498db",
   },
   offsetLayer: {
     width: 200,
     height: 200,
-    position: 'absolute',
+    position: "absolute",
     borderWidth: 20,
     borderRadius: 100,
-    borderLeftColor: 'transparent',
-    borderBottomColor: 'transparent',
-    borderRightColor: 'white',
-    borderTopColor: 'blue',
-    transform: [{ rotateZ: '-135deg' }]
+    borderLeftColor: "transparent",
+    borderBottomColor: "transparent",
+    borderRightColor: "white",
+    borderTopColor: "blue",
+    transform: [{ rotateZ: "-135deg" }],
   },
   display: {
-    position: 'absolute',
+    position: "absolute",
     fontSize: 25,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   sidebar: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     top: 0,
     bottom: 0,
     width: 250,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     padding: 20,
     zIndex: 10,
     elevation: 10,
@@ -369,29 +541,28 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   overlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
     zIndex: 5,
   },
   sidebarItem: {
     padding: 7,
     marginVertical: 5,
     borderRadius: 20,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   activeSidebarItem: {
-    backgroundColor: '#ADD8E6',
+    backgroundColor: "#ADD8E6",
   },
   sidebarText: {
     fontSize: 16,
     marginVertical: 15,
   },
   hoveredBlock: {
-    backgroundColor: '#FFA07A',
+    backgroundColor: "#FFA07A",
   },
 });
-
