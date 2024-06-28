@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-
-const buildingsData = [
-  { id: 1, name: 'Fair Field Society', image: require('../assets/images/building.png'), flats: [{ id: 1, number: 'A-101', type: '2BHK', area: 1200 }, { id: 2, number: 'A-102', type: '3BHK', area: 1500 }] },
-  { id: 2, name: 'Green View Apartments', image: require('../assets/images/building.png'), flats: [{ id: 1, number: 'B-201', type: '2BHK', area: 1100 }, { id: 2, number: 'B-202', type: '3BHK', area: 1400 }] },
-  { id: 3, name: 'Sunset Towers', image: require('../assets/images/building.png'), flats: [{ id: 1, number: 'C-301', type: '2BHK', area: 1000 }, { id: 2, number: 'C-302', type: '3BHK', area: 1300 }] },
-  { id: 4, name: 'Lake View Residency', image: require('../assets/images/building.png'), flats: [{ id: 1, number: 'D-401', type: '2BHK', area: 1200 }, { id: 2, number: 'D-402', type: '3BHK', area: 1600 }] },
-];
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 
 const Totalbuildings = ({ navigation }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -14,20 +7,45 @@ const Totalbuildings = ({ navigation }) => {
   const [societyName, setSocietyName] = useState('');
   const [numberOfWings, setNumberOfWings] = useState('');
   const [societyAddress, setSocietyAddress] = useState('');
+  const [buildingsData, setBuildingsData] = useState([]);
+
+  useEffect(() => {
+    fetch('https://stock-management-system-server-6mja.onrender.com/api/societies')
+      .then((response) => response.json())
+      .then((data) => setBuildingsData(data))
+      .catch((error) => console.error('Error fetching societies:', error));
+  }, []);
 
   const toggleModal = (building) => {
     setSelectedBuilding(building);
-    setSocietyName(building.name);  // Pre-fill society name
+    setSocietyName(building ? building.name : '');
     setIsModalVisible(true);
   };
 
   const handleSubmit = () => {
-    Alert.alert('Society added successfully');
-    console.log('Submitted:', societyName, numberOfWings, societyAddress);
-    setSocietyName('');
-    setNumberOfWings('');
-    setSocietyAddress('');
-    setIsModalVisible(false);
+    const newSociety = {
+      name: societyName,
+      numberOfWings,
+      address: societyAddress,
+    };
+
+    fetch('https://stock-management-system-server-6mja.onrender.com/api/societies', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newSociety),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        Alert.alert('Society added successfully');
+        setBuildingsData([...buildingsData, data]);
+        setSocietyName('');
+        setNumberOfWings('');
+        setSocietyAddress('');
+        setIsModalVisible(false);
+      })
+      .catch((error) => console.error('Error adding society:', error));
   };
 
   const handleBuildingPress = (building) => {
@@ -39,11 +57,11 @@ const Totalbuildings = ({ navigation }) => {
       <View style={styles.buildingsContainer}>
         {buildingsData.map((building) => (
           <TouchableOpacity
-            key={building.id}
+            key={building._id}
             style={styles.buildingItem}
             onPress={() => handleBuildingPress(building)}
           >
-            <Image source={building.image} style={styles.buildingImage} />
+            <Image source={require('../assets/images/building.png')} style={styles.buildingImage} />
             <Text style={styles.buildingName}>{building.name}</Text>
           </TouchableOpacity>
         ))}
@@ -74,15 +92,8 @@ const Totalbuildings = ({ navigation }) => {
               placeholder="Name of Society"
               value={societyName}
               onChangeText={(text) => setSocietyName(text)}
-              editable={true}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Number of Wings"
-              value={numberOfWings}
-              onChangeText={(text) => setNumberOfWings(text)}
-              keyboardType="numeric"
-            />
+           
             <TextInput
               style={styles.input}
               placeholder="Address of Society"
@@ -103,7 +114,7 @@ const Totalbuildings = ({ navigation }) => {
         </View>
       </Modal>
 
-      <TouchableOpacity style={styles.addButton} onPress={() => setIsModalVisible(true)}>
+      <TouchableOpacity style={styles.addButton} onPress={() => toggleModal(null)}>
         <Text style={styles.addButtonText}>Add Society</Text>
       </TouchableOpacity>
     </View>

@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView,Alert } from 'react-native';
-
-const wingData = [
-  { id: 1, name: 'Wing-A', image: require('../assets/images/wing.png') },
-  { id: 2, name: 'Wing-B', image: require('../assets/images/wing.png') },
-  { id: 3, name: 'Wing-C', image: require('../assets/images/wing.png') },
-  { id: 4, name: 'Wing-D', image: require('../assets/images/wing.png') },
-];
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 
 const Wings = ({ navigation }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedWing, setSelectedWing] = useState(null);
   const [wingName, setWingName] = useState('');
-  const [numberOfFlats, setNumberOfFlats] = useState('');
+  const [wingData, setWingData] = useState([]);
+
+  useEffect(() => {
+    fetch('https://stock-management-system-server-6mja.onrender.com/api/wings')  // Ensure this URL matches your backend setup
+      .then((response) => response.json())
+      .then((data) => setWingData(data))
+      .catch((error) => console.error('Error fetching wings:', error));
+  }, []);
 
   const toggleModal = (wing) => {
     setSelectedWing(wing);
@@ -20,12 +20,25 @@ const Wings = ({ navigation }) => {
   };
 
   const handleSubmit = () => {
-    Alert.alert('Wing added successfully');
+    const newWing = {
+      name: wingName,
+    };
 
-    console.log('Submitted:', wingName, numberOfFlats)
-    setWingName('');
-    setNumberOfFlats('');
-    setIsModalVisible(false);
+    fetch('https://stock-management-system-server-6mja.onrender.com/api/wings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newWing),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        Alert.alert('Wing added successfully');
+        setWingData([...wingData, data]);
+        setWingName('');
+        setIsModalVisible(false);
+      })
+      .catch((error) => console.error('Error adding wing:', error));
   };
 
   const handleWingPress = (wing) => {
@@ -37,11 +50,11 @@ const Wings = ({ navigation }) => {
       <View style={styles.buildingsContainer}>
         {wingData.map((wing) => (
           <TouchableOpacity
-            key={wing.id}
+            key={wing._id}
             style={styles.buildingItem}
             onPress={() => handleWingPress(wing)}
           >
-            <Image source={wing.image} style={styles.buildingImage} />
+            <Image source={require('../assets/images/wing.png')} style={styles.buildingImage} />
             <Text style={styles.buildingName}>{wing.name}</Text>
           </TouchableOpacity>
         ))}
@@ -51,7 +64,7 @@ const Wings = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>Total Wings  </Text>
+      <Text style={styles.headerText}>Total Wings</Text>
       <ScrollView contentContainerStyle={styles.scrollView}>
         {renderWings()}
       </ScrollView>
@@ -73,13 +86,6 @@ const Wings = ({ navigation }) => {
               value={wingName}
               onChangeText={(text) => setWingName(text)}
               editable={true}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Number of Flats"
-              value={numberOfFlats}
-              onChangeText={(text) => setNumberOfFlats(text)}
-              keyboardType="numeric"
             />
            
             <View style={styles.buttonContainer}>

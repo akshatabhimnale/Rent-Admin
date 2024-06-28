@@ -1,45 +1,71 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView,Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 
-const flatData = [
-  { id: 1, name: 'Flat-A', image: require('../assets/images/flats.jpg') },
-  { id: 2, name: 'Flat-B', image: require('../assets/images/flats.jpg') },
-  { id: 3, name: 'Flat-C', image: require('../assets/images/flats.jpg') },
-  { id: 4, name: 'Flat-D', image: require('../assets/images/flats.jpg') },
-];
+// URL of the backend API
+const API_URL = "https://stock-management-system-server-6mja.onrender.com/api/flats";
 
 const Flats = ({ navigation }) => {
+  const [flats, setFlats] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedFlat, setSelectedFlat] = useState(null);
   const [flatName, setFlatName] = useState('');
 
-  const toggleModal = (flat) => {
-    setSelectedFlat(flat);
+  // Fetch flats data from the backend API
+  useEffect(() => {
+    const fetchFlats = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        setFlats(data);
+      } catch (error) {
+        console.error('Error fetching flats:', error);
+      }
+    };
+    fetchFlats();
+  }, []);
+
+  const toggleModal = () => {
     setIsModalVisible(true);
   };
 
-  const handleSubmit = () => {
-    Alert.alert('Flat added successfully');
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: flatName }),
+      });
 
-    console.log('Submitted:', flatName, numberOfFlats)
-    setFlatName('');
-    setIsModalVisible(false);
+      if (!response.ok) {
+        throw new Error('Failed to add flat');
+      }
+
+      const newFlat = await response.json();
+      setFlats([...flats, newFlat]);
+      Alert.alert('Flat added successfully');
+      setFlatName('');
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Error adding flat:', error);
+      Alert.alert('Failed to add flat');
+    }
   };
 
   const handleFlatPress = (flat) => {
-    navigation.navigate('Flats', { flat });
+    navigation.navigate('FlatDetails', { flat });
   };
 
   const renderFlats = () => {
     return (
       <View style={styles.buildingsContainer}>
-        {flatData.map((flat) => (
+        {flats.map((flat) => (
           <TouchableOpacity
             key={flat.id}
             style={styles.buildingItem}
             onPress={() => handleFlatPress(flat)}
           >
-            <Image source={flat.image} style={styles.buildingImage} />
+            <Image source={require('../assets/images/flats.jpg')} style={styles.buildingImage} />
             <Text style={styles.buildingName}>{flat.name}</Text>
           </TouchableOpacity>
         ))}
@@ -49,7 +75,7 @@ const Flats = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>Total Flats  </Text>
+      <Text style={styles.headerText}>Total Flats</Text>
       <ScrollView contentContainerStyle={styles.scrollView}>
         {renderFlats()}
       </ScrollView>
@@ -64,7 +90,7 @@ const Flats = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}> Add Flat</Text>
+            <Text style={styles.modalTitle}>Add Flat</Text>
             <TextInput
               style={styles.input}
               placeholder="Name of Flat"
@@ -72,8 +98,6 @@ const Flats = ({ navigation }) => {
               onChangeText={(text) => setFlatName(text)}
               editable={true}
             />
-            
-           
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
                 <Text style={styles.submitButtonText}>ADD</Text>
@@ -86,7 +110,7 @@ const Flats = ({ navigation }) => {
         </View>
       </Modal>
 
-      <TouchableOpacity style={styles.addButton} onPress={() => setIsModalVisible(true)}>
+      <TouchableOpacity style={styles.addButton} onPress={toggleModal}>
         <Text style={styles.addButtonText}>Add Flat</Text>
       </TouchableOpacity>
     </View>
