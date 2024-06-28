@@ -412,22 +412,22 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   block1: {
-    backgroundColor: "#E0B0FF",
+    backgroundColor: "#CCCCFF",
   },
   block2: {
-    backgroundColor: "#FF69B4",
+    backgroundColor: "#ade6d8",
   },
   block3: {
-    backgroundColor: "#FFAC1C",
+    backgroundColor: "#ADD8E6",
   },
   block4: {
-    backgroundColor: "#86c5da",
+    backgroundColor: "#FBCEB1",
   },
   block5: {
     backgroundColor: "#e6d8ad",
   },
   block6: {
-    backgroundColor: "#ade6d8",
+    backgroundColor: "#FFC0CB",
   },
   spinnerContainer: {
     flex: 1,
