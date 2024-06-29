@@ -49,7 +49,7 @@ const Totalbuildings = ({ navigation }) => {
   };
 
   const handleBuildingPress = (building) => {
-    navigation.navigate('Wings', { building });
+    navigation.navigate('Wings', { societyId: building._id });
   };
 
   const renderBuildings = () => {

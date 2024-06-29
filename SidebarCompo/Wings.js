@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 
-const Wings = ({ navigation }) => {
+const Wings = ({ route, navigation }) => {
+  const { societyId } = route.params;
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedWing, setSelectedWing] = useState(null);
+
   const [wingName, setWingName] = useState('');
   const [wingData, setWingData] = useState([]);
 
   useEffect(() => {
-    fetch('https://stock-management-system-server-6mja.onrender.com/api/wings')  // Ensure this URL matches your backend setup
+    fetch(`https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${societyId}`)
       .then((response) => response.json())
       .then((data) => setWingData(data))
       .catch((error) => console.error('Error fetching wings:', error));
-  }, []);
+  }, [societyId]);
 
-  const toggleModal = (wing) => {
-    setSelectedWing(wing);
-    setIsModalVisible(true);
-  };
-
+ 
   const handleSubmit = () => {
     const newWing = {
       name: wingName,
