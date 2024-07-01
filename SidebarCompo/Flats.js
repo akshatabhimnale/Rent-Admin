@@ -2,26 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 
 // URL of the backend API
-const API_URL = "https://stock-management-system-server-6mja.onrender.com/api/flats";
+const API_URL = "";
 
-const Flats = ({ navigation }) => {
+const Flats = ({route, navigation }) => {
+  const { societyId } = route.params;
   const [flats, setFlats] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flatName, setFlatName] = useState('');
 
   // Fetch flats data from the backend API
+  // useEffect(() => {
+  //   const fetchFlats = async () => {
+  //     try {
+  //       const response = await fetch(`https://stock-management-system-server-6mja.onrender.com/api/flats/flats-by-wings/${societyId}`);
+  //       const data = await response.json();
+  //       setFlats(data);
+  //     } catch (error) {
+  //       console.error('Error fetching flats:', error);
+  //     }
+  //   };
+  //   fetchFlats();
+  // }, []);
+
   useEffect(() => {
-    const fetchFlats = async () => {
-      try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        setFlats(data);
-      } catch (error) {
-        console.error('Error fetching flats:', error);
-      }
-    };
-    fetchFlats();
-  }, []);
+    fetch(`https://stock-management-system-server-6mja.onrender.com/api/flats/flats-by-wings/${societyId}`)
+      .then((response) => response.json())
+      .then((data) => setFlats(data))
+      .catch((error) => console.error('Error fetching wings:', error));
+  }, [societyId]);
 
   const toggleModal = () => {
     setIsModalVisible(true);
@@ -29,7 +37,7 @@ const Flats = ({ navigation }) => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`https://stock-management-system-server-6mja.onrender.com/api/flats/add-flats-by-wing/${societyId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

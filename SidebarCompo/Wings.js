@@ -21,7 +21,7 @@ const Wings = ({ route, navigation }) => {
       name: wingName,
     };
 
-    fetch('https://stock-management-system-server-6mja.onrender.com/api/wings', {
+    fetch(`https://stock-management-system-server-6mja.onrender.com/api/wings/add-wing-by-society/${societyId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ const Wings = ({ route, navigation }) => {
   };
 
   const handleWingPress = (wing) => {
-    navigation.navigate('Flats', { wing });
+    navigation.navigate('Flats', { societyId:  wing._id });
   };
 
   const renderWings = () => {
