@@ -17,6 +17,7 @@ import Tenant from './SideCompo/Tenant';
 import Expense from './SideCompo/Expense';
 import Logout from './SideCompo/Logout';
 import Wings from './SidebarCompo/Wings';
+import Userdetails from './SidebarCompo/Userdetails';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -45,6 +46,7 @@ export default function App() {
         <Stack.Screen name="Expense" component={Expense} />
         <Stack.Screen name="Logout" component={Logout} />
         <Stack.Screen name="Wings" component={Wings} />
+        <Stack.Screen name="Userdetails" component={Userdetails} />
 
       </Stack.Navigator>
     </NavigationContainer>

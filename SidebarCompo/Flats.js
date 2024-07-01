@@ -1,34 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, Modal, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 
-// URL of the backend API
-const API_URL = "";
+const API_URL = "https://stock-management-system-server-6mja.onrender.com";
 
-const Flats = ({route, navigation }) => {
+const Flats = ({ route, navigation }) => {
   const { societyId } = route.params;
   const [flats, setFlats] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flatName, setFlatName] = useState('');
 
-  // Fetch flats data from the backend API
-  // useEffect(() => {
-  //   const fetchFlats = async () => {
-  //     try {
-  //       const response = await fetch(`https://stock-management-system-server-6mja.onrender.com/api/flats/flats-by-wings/${societyId}`);
-  //       const data = await response.json();
-  //       setFlats(data);
-  //     } catch (error) {
-  //       console.error('Error fetching flats:', error);
-  //     }
-  //   };
-  //   fetchFlats();
-  // }, []);
-
   useEffect(() => {
-    fetch(`https://stock-management-system-server-6mja.onrender.com/api/flats/flats-by-wings/${societyId}`)
+    fetch(`${API_URL}/api/flats/flats-by-wings/${societyId}`)
       .then((response) => response.json())
       .then((data) => setFlats(data))
-      .catch((error) => console.error('Error fetching wings:', error));
+      .catch((error) => console.error('Error fetching flats:', error));
   }, [societyId]);
 
   const toggleModal = () => {
@@ -37,7 +22,7 @@ const Flats = ({route, navigation }) => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`https://stock-management-system-server-6mja.onrender.com/api/flats/add-flats-by-wing/${societyId}`, {
+      const response = await fetch(`${API_URL}/api/flats/add-flats-by-wing/${societyId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +46,7 @@ const Flats = ({route, navigation }) => {
   };
 
   const handleFlatPress = (flat) => {
-    navigation.navigate('FlatDetails', { flat });
+    navigation.navigate('Userdetails', { flat });
   };
 
   const renderFlats = () => {
@@ -69,7 +54,7 @@ const Flats = ({route, navigation }) => {
       <View style={styles.buildingsContainer}>
         {flats.map((flat) => (
           <TouchableOpacity
-            key={flat.id}
+            key={flat._id}
             style={styles.buildingItem}
             onPress={() => handleFlatPress(flat)}
           >
