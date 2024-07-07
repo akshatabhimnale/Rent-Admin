@@ -155,7 +155,7 @@ export default function Userdetails() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>User Details</Text>
+      <Text style={styles.headerText}>Tenant Details</Text>
 
       <View style={styles.searchContainer}>
         <TextInput
@@ -184,15 +184,17 @@ export default function Userdetails() {
           >
             <Text style={styles.tableCell}>{user.date}</Text>
             <Text style={styles.tableCell}>{user.name}</Text>
-            <Text
-              style={[
-                styles.tableCell,
-                user.status === "Active" && styles.activeStatus,
-                user.status === "Deactive" && styles.inactiveStatus,
-              ]}
-            >
-              {user.status}
-            </Text>
+            <TouchableOpacity>
+              <Text
+                style={[
+                  styles.tableCell,
+                  user.status === "Active" && styles.activeStatus,
+                  user.status === "Deactive" && styles.inactiveStatus,
+                ]}
+              >
+                {user.status}
+              </Text>
+            </TouchableOpacity>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -205,7 +207,7 @@ export default function Userdetails() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>User Details</Text>
+            <Text style={styles.modalTitle}>Tenant Details</Text>
             {selectedUser && (
               <View style={styles.userDetailContainer}>
                 <View style={styles.userDetailRow}>
@@ -245,7 +247,7 @@ export default function Userdetails() {
             contentContainerStyle={styles.modalContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.modalTitle}>Add User</Text>
+            <Text style={styles.modalTitle}>Add Tenant</Text>
             <View style={styles.formContainer}>
               <View style={styles.formRow}>
                 <Text style={styles.label}>Name:</Text>
@@ -622,13 +624,13 @@ export default function Userdetails() {
                 style={styles.addButton}
                 onPress={handleConfirmAddUser}
               >
-                <Text style={styles.addButtonText}>Add User</Text>
+                <Text style={styles.submitButtonText}>ADD</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => setAddUserModalVisible(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.closeButtonText}>CLOSE</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -636,7 +638,7 @@ export default function Userdetails() {
       </Modal>
 
       <TouchableOpacity style={styles.addButton} onPress={handleAddUser}>
-        <Text style={styles.addButtonText}>Add User</Text>
+        <Text style={styles.addButtonText}>Add Tenant</Text>
       </TouchableOpacity>
     </View>
   );
@@ -685,11 +687,25 @@ const styles = StyleSheet.create({
   closeButton: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: "#007BFF",
+    backgroundColor: "red",
     borderRadius: 5,
   },
   closeButtonText: {
     color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  submitButton: {
+    backgroundColor: "#27ae60",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    flex: 1,
+    marginRight: 10,
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
   },
@@ -713,12 +729,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   activeStatus: {
-    color: "green",
+    backgroundColor: "#d4edda", // Light green background color
+    color: "#155724", // Dark green text color
     fontWeight: "bold",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    textAlign: "center",
   },
   inactiveStatus: {
-    color: "red",
+    backgroundColor: "#f8d7da", // Light red background color
+    color: "#721c24", // Dark red text color
     fontWeight: "bold",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    textAlign: "center",
   },
   modalTitle: {
     fontSize: 20,
@@ -755,7 +781,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   addButton: {
-    backgroundColor: "#3498db",
+    backgroundColor: "#FFBF00",
     padding: 15,
     borderRadius: 5,
     alignItems: "center",
