@@ -4,10 +4,12 @@ import {
   Text,
   View,
   Modal,
+  Button,
   TouchableOpacity,
   ScrollView,
   TextInput,
 } from "react-native";
+import { launchImageLibrary } from "react-native-image-picker";
 
 export default function Userdetails() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,7 +39,7 @@ export default function Userdetails() {
     reference_person1_age: "",
     reference_person2_age: "",
     agent_name: "",
-    flat_id: "",
+    adharPhotoUri: "",
     rent_status: "Active",
   });
   const [userList, setUserList] = useState([
@@ -152,6 +154,30 @@ export default function Userdetails() {
     }
     return 0;
   });
+
+  const handleChoosePhoto = () => {
+    launchImageLibrary(
+      {
+        mediaType: "photo",
+        includeBase64: false,
+      },
+      (response) => {
+        if (response.didCancel) {
+          console.log("User cancelled image picker");
+        } else if (response.error) {
+          console.log("ImagePicker Error: ", response.error);
+        } else if (response.customButton) {
+          console.log("User tapped custom button: ", response.customButton);
+        } else {
+          const source = { uri: response.assets[0].uri };
+          setUserDetails((prevState) => ({
+            ...prevState,
+            adharPhotoUri: source.uri,
+          }));
+        }
+      }
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -607,18 +633,14 @@ export default function Userdetails() {
                 />
               </View>
               <View style={styles.formRow}>
-                <Text style={styles.label}>Flat ID:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter flat ID"
-                  value={userDetails.flat_id}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      flat_id: text,
-                    }))
-                  }
-                />
+                <Text style={styles.label}>Adhar Card Photo</Text>
+                <Button title="Choose Photo" onPress={handleChoosePhoto} />
+                {userDetails.adharPhotoUri ? (
+                  <Image
+                    source={{ uri: userDetails.adharPhotoUri }}
+                    style={styles.image}
+                  />
+                ) : null}
               </View>
               <TouchableOpacity
                 style={styles.addButton}
