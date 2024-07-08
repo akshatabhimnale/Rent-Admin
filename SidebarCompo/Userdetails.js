@@ -1,15 +1,15 @@
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
+  Button,
+  Modal,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
-  Modal,
-  Button,
-  TouchableOpacity,
-  ScrollView,
   TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { launchImageLibrary } from "react-native-image-picker";
 
 export default function Userdetails() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -155,28 +155,28 @@ export default function Userdetails() {
     return 0;
   });
 
-  const handleChoosePhoto = () => {
-    launchImageLibrary(
-      {
-        mediaType: "photo",
-        includeBase64: false,
-      },
-      (response) => {
-        if (response.didCancel) {
-          console.log("User cancelled image picker");
-        } else if (response.error) {
-          console.log("ImagePicker Error: ", response.error);
-        } else if (response.customButton) {
-          console.log("User tapped custom button: ", response.customButton);
-        } else {
-          const source = { uri: response.assets[0].uri };
-          setUserDetails((prevState) => ({
-            ...prevState,
-            adharPhotoUri: source.uri,
-          }));
-        }
-      }
-    );
+  const handleChoosePhoto = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("You've refused to allow this app to access your photos!");
+      return;
+    }
+
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!pickerResult.canceled) {
+      setUserDetails((prevState) => ({
+        ...prevState,
+        adharPhotoUri: pickerResult.assets[0].uri,
+      }));
+    }
   };
 
   return (
@@ -633,15 +633,17 @@ export default function Userdetails() {
                 />
               </View>
               <View style={styles.formRow}>
-                <Text style={styles.label}>Adhar Card Photo</Text>
-                <Button title="Choose Photo" onPress={handleChoosePhoto} />
+                <Text style={styles.label}>Adhar Photo:</Text>
+                <TouchableOpacity style={styles.uploadButton}>
+                  <Button title="Choose Photo" onPress={handleChoosePhoto} />
+                </TouchableOpacity>
                 {userDetails.adharPhotoUri ? (
-                  <Image
-                    source={{ uri: userDetails.adharPhotoUri }}
-                    style={styles.image}
-                  />
+                  <Text style={styles.fileName}>
+                    {userDetails.adharPhotoUri.split("/").pop()}
+                  </Text>
                 ) : null}
               </View>
+
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={handleConfirmAddUser}
