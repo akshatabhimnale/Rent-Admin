@@ -13,6 +13,7 @@ import {
 
 export default function Userdetails() {
   const [modalVisible, setModalVisible] = useState(false);
+  const [aadharBackPhotoUri, setAadharBackPhotoUri] = useState("");
   const [addUserModalVisible, setAddUserModalVisible] = useState(false);
   const [userDetails, setUserDetails] = useState({
     name: "",
@@ -155,7 +156,7 @@ export default function Userdetails() {
     return 0;
   });
 
-  const handleChoosePhoto = async () => {
+  const handleChoosePhoto = async (photoType) => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -171,11 +172,26 @@ export default function Userdetails() {
       quality: 1,
     });
 
-    if (!pickerResult.canceled) {
-      setUserDetails((prevState) => ({
-        ...prevState,
-        adharPhotoUri: pickerResult.assets[0].uri,
-      }));
+    if (!pickerResult.cancelled) {
+      // Determine which photo type is selected (front or back)
+      if (photoType === "adharFront") {
+        setUserDetails((prevState) => ({
+          ...prevState,
+          adharPhotoUri: pickerResult.assets[0].uri,
+        }));
+      } else if (photoType === "adharBack") {
+        setAadharBackPhotoUri(pickerResult.assets[0].uri);
+      } else if (photoType === "tenantPhoto") {
+        setUserDetails((prevState) => ({
+          ...prevState,
+          tenantPhotoUri: pickerResult.assets[0].uri,
+        }));
+      } else if (photoType === "lightBill") {
+        setUserDetails((prevState) => ({
+          ...prevState,
+          lightBillPhotoUri: pickerResult.assets[0].uri,
+        }));
+      }
     }
   };
 
@@ -633,13 +649,60 @@ export default function Userdetails() {
                 />
               </View>
               <View style={styles.formRow}>
-                <Text style={styles.label}>Adhar Photo:</Text>
+                <Text style={styles.label}>Tenant Passport Photo:</Text>
                 <TouchableOpacity style={styles.uploadButton}>
-                  <Button title="Choose Photo" onPress={handleChoosePhoto} />
+                  <Button
+                    title="Choose Photo"
+                    onPress={() => handleChoosePhoto("tenantPhoto")}
+                  />
+                </TouchableOpacity>
+                {userDetails.tenantPhotoUri ? (
+                  <Text style={styles.fileName}>
+                    {userDetails.tenantPhotoUri.split("/").pop()}
+                  </Text>
+                ) : null}
+              </View>
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Aadhar Card Front Photo:</Text>
+                <TouchableOpacity style={styles.uploadButton}>
+                  <Button
+                    title="Choose Photo"
+                    onPress={() => handleChoosePhoto("adharFront")}
+                  />
                 </TouchableOpacity>
                 {userDetails.adharPhotoUri ? (
                   <Text style={styles.fileName}>
                     {userDetails.adharPhotoUri.split("/").pop()}
+                  </Text>
+                ) : null}
+              </View>
+
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Aadhar Card Back Photo:</Text>
+                <TouchableOpacity style={styles.uploadButton}>
+                  <Button
+                    title="Choose Photo"
+                    onPress={() => handleChoosePhoto("adharBack")}
+                  />
+                </TouchableOpacity>
+                {aadharBackPhotoUri ? (
+                  <Text style={styles.fileName}>
+                    {aadharBackPhotoUri.split("/").pop()}
+                  </Text>
+                ) : null}
+              </View>
+
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Light Bill:</Text>
+                <TouchableOpacity style={styles.uploadButton}>
+                  <Button
+                    title="Choose Photo"
+                    onPress={() => handleChoosePhoto("lightBill")}
+                  />
+                </TouchableOpacity>
+                {userDetails.lightBillPhotoUri ? (
+                  <Text style={styles.fileName}>
+                    {userDetails.lightBillPhotoUri.split("/").pop()}
                   </Text>
                 ) : null}
               </View>
