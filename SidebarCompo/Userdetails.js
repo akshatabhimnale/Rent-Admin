@@ -42,6 +42,12 @@ export default function Userdetails() {
     agent_name: "",
     adharPhotoUri: "",
     rent_status: "Active",
+    flat_no: "",
+    building_name: "",
+    area: "",
+    room_type: "",
+    wing: "",
+    adhar_no: "",
   });
   const [userList, setUserList] = useState([
     {
@@ -81,6 +87,12 @@ export default function Userdetails() {
       agent_name: "",
       flat_id: "",
       rent_status: "Active",
+      flat_no: "",
+      building_name: "",
+      area: "",
+      room_type: "",
+      wing: "",
+      adhar_no: "",
     });
     setAddUserModalVisible(true);
   };
@@ -129,6 +141,12 @@ export default function Userdetails() {
       agent_name: "",
       flat_id: "",
       rent_status: "Active",
+      flat_no: "",
+      building_name: "",
+      area: "",
+      room_type: "",
+      wing: "",
+      adhar_no: "",
     });
     setAddUserModalVisible(false);
   };
@@ -347,6 +365,98 @@ export default function Userdetails() {
                   keyboardType="numeric"
                 />
               </View>
+
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Aadhar Number:</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Aadhar Number"
+                  value={userDetails.adhar_no}
+                  onChangeText={(text) =>
+                    setUserDetails((prevState) => ({
+                      ...prevState,
+                      adhar_no: text,
+                    }))
+                  }
+                  keyboardType="numeric"
+                />
+              </View>
+
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Flat No:</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Flat Number"
+                  value={userDetails.flat_no}
+                  onChangeText={(text) =>
+                    setUserDetails((prevState) => ({
+                      ...prevState,
+                      flat_no: text,
+                    }))
+                  }
+                />
+              </View>
+
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Building Name:</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Building Name"
+                  value={userDetails.building_name}
+                  onChangeText={(text) =>
+                    setUserDetails((prevState) => ({
+                      ...prevState,
+                      building_name: text,
+                    }))
+                  }
+                />
+              </View>
+
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Area:</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Area"
+                  value={userDetails.area}
+                  onChangeText={(text) =>
+                    setUserDetails((prevState) => ({
+                      ...prevState,
+                      area: text,
+                    }))
+                  }
+                />
+              </View>
+
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Room Type:</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Room Type"
+                  value={userDetails.room_type}
+                  onChangeText={(text) =>
+                    setUserDetails((prevState) => ({
+                      ...prevState,
+                      room_type: text,
+                    }))
+                  }
+                />
+              </View>
+
+              <View style={styles.formRow}>
+                <Text style={styles.label}>Wing:</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Wing"
+                  value={userDetails.wing}
+                  onChangeText={(text) =>
+                    setUserDetails((prevState) => ({
+                      ...prevState,
+                      wing: text,
+                    }))
+                  }
+                />
+              </View>
+
               <View style={styles.formRow}>
                 <Text style={styles.label}>Maintenance:</Text>
                 <TextInput
