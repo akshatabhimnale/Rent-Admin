@@ -1,7 +1,11 @@
 import React from "react";
+import { View, Text } from "react-native";
 
 const ManageFlats = () => {
-  return <div></div>;
+  return (
+    <View>
+      <Text>Manage Flats</Text>
+    </View>
+  );
 };
-
 export default ManageFlats;

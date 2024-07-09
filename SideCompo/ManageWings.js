@@ -1,7 +1,12 @@
 import React from "react";
+import { View, Text } from "react-native";
 
 const ManageWings = () => {
-  return <div></div>;
+  return (
+    <View>
+      <Text>Manage Wings</Text>
+    </View>
+  );
 };
 
 export default ManageWings;
