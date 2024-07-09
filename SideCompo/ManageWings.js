@@ -26,6 +26,10 @@ const ManageWings = ({ navigation }) => {
   const [loadingWings, setLoadingWings] = useState(true); // State to track loading wings
 
   useEffect(() => {
+    fetchSocieties();
+  }, []);
+
+  const fetchSocieties = () => {
     fetch(
       "https://stock-management-system-server-6mja.onrender.com/api/societies"
     )
@@ -38,12 +42,17 @@ const ManageWings = ({ navigation }) => {
       .then((data) => {
         setSocieties(data);
         setFetchError(null); // Reset fetch error if successful
+        // Fetch wings for the first society in the list by default
+        if (data.length > 0) {
+          fetchWingsForSociety(data[0]._id);
+          setSelectedBuilding(data[0]);
+        }
       })
       .catch((error) => {
         console.error("Error fetching societies:", error);
         setFetchError(error.message); // Store error message
       });
-  }, []);
+  };
 
   const fetchWingsForSociety = (societyId) => {
     setLoadingWings(true); // Start loading wings
