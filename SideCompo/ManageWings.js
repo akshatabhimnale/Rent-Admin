@@ -212,10 +212,10 @@ const ManageWings = ({ navigation }) => {
                     <Text style={styles.wingName}>{wing.name}</Text>
                     <View style={styles.wingIcons}>
                       <TouchableOpacity onPress={() => editWing(wing._id)}>
-                        <FontAwesome name="edit" size={24} color="#6699CC" />
+                        <FontAwesome name="edit" size={30} color="#6699CC" />
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => deleteWing(wing._id)}>
-                        <FontAwesome name="trash" size={24} color="red" />
+                        <FontAwesome name="trash" size={30} color="red" />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -389,6 +389,7 @@ const styles = StyleSheet.create({
   },
   wingIcons: {
     flexDirection: "row",
+    gap:15,
   },
   modalContainer: {
     flex: 1,
