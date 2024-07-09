@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator,
   Alert,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
@@ -22,6 +23,7 @@ const ManageWings = ({ navigation }) => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedWing, setSelectedWing] = useState(null);
+  const [loadingWings, setLoadingWings] = useState(true); // State to track loading wings
 
   useEffect(() => {
     fetch(
@@ -44,6 +46,7 @@ const ManageWings = ({ navigation }) => {
   }, []);
 
   const fetchWingsForSociety = (societyId) => {
+    setLoadingWings(true); // Start loading wings
     fetch(
       `https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${societyId}`
     )
@@ -55,16 +58,18 @@ const ManageWings = ({ navigation }) => {
       })
       .then((data) => {
         setWings(data);
+        setLoadingWings(false); // Stop loading wings
       })
       .catch((error) => {
         console.error("Error fetching wings:", error);
+        setLoadingWings(false); // Stop loading wings on error
       });
   };
 
   const toggleModal = (society) => {
     setSelectedBuilding(society);
     setIsModalVisible(true);
-    fetchWingsForSociety(society._id);
+    fetchWingsForSociety(society._id); // Fetch wings when modal is toggled
   };
 
   const addWing = () => {
@@ -85,7 +90,8 @@ const ManageWings = ({ navigation }) => {
         return response.json();
       })
       .then((data) => {
-        setWings([...wings, data]); // Update local state with new wing
+        // Fetch updated list of wings after adding a wing
+        fetchWingsForSociety(selectedBuilding._id);
         setIsModalVisible(false);
         setWingName("");
       })
@@ -184,25 +190,29 @@ const ManageWings = ({ navigation }) => {
               </TouchableOpacity>
             </View>
             <View style={styles.divider} />
-            <ScrollView>
-              {wings.map((wing) => (
-                <View key={wing._id} style={styles.wingContainer}>
-                  <Image
-                    source={require("../assets/images/wing.png")}
-                    style={styles.wingImage}
-                  />
-                  <Text style={styles.wingName}>{wing.name}</Text>
-                  <View style={styles.wingIcons}>
-                    <TouchableOpacity onPress={() => editWing(wing._id)}>
-                      <FontAwesome name="edit" size={24} color="#6699CC" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => deleteWing(wing._id)}>
-                      <FontAwesome name="trash" size={24} color="red" />
-                    </TouchableOpacity>
+            {loadingWings ? (
+              <ActivityIndicator size="large" color="#6699CC" />
+            ) : (
+              <ScrollView>
+                {wings.map((wing) => (
+                  <View key={wing._id} style={styles.wingContainer}>
+                    <Image
+                      source={require("../assets/images/wing.png")}
+                      style={styles.wingImage}
+                    />
+                    <Text style={styles.wingName}>{wing.name}</Text>
+                    <View style={styles.wingIcons}>
+                      <TouchableOpacity onPress={() => editWing(wing._id)}>
+                        <FontAwesome name="edit" size={24} color="#6699CC" />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => deleteWing(wing._id)}>
+                        <FontAwesome name="trash" size={24} color="red" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              ))}
-            </ScrollView>
+                ))}
+              </ScrollView>
+            )}
           </View>
         ))}
       </ScrollView>
