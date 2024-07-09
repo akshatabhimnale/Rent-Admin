@@ -250,13 +250,31 @@ const HomeScreen = () => {
           </Text>
         </View>
         <TouchableOpacity
-          onPress={() => handleSidebarItemPress("Manage")}
+          onPress={() => handleSidebarItemPress("ManageSociety")}
           style={[
             styles.sidebarItem,
-            activeNavItem === "Manage" && styles.activeSidebarItem,
+            activeNavItem === "ManageSociety" && styles.activeSidebarItem,
           ]}
         >
-          <Text style={styles.sidebarText}>Manage Property</Text>
+          <Text style={styles.sidebarText}>Manage Society</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => handleSidebarItemPress("ManageWings")}
+          style={[
+            styles.sidebarItem,
+            activeNavItem === "ManageWings" && styles.activeSidebarItem,
+          ]}
+        >
+          <Text style={styles.sidebarText}>Manage Wings</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => handleSidebarItemPress("ManageFlats")}
+          style={[
+            styles.sidebarItem,
+            activeNavItem === "ManageFlats" && styles.activeSidebarItem,
+          ]}
+        >
+          <Text style={styles.sidebarText}>Manage Flats</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleSidebarItemPress("Tenant")}
