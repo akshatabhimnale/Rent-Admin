@@ -27,6 +27,7 @@ const ManageFlats = ({ navigation }) => {
   const [flatName, setFlatName] = useState("");
   const [fetchFlatsError, setFetchFlatsError] = useState(null);
   const [selectedFlat, setSelectedFlat] = useState(null);
+  const [addFlatModalVisible, setAddFlatModalVisible] = useState(false);
 
   useEffect(() => {
     fetchSocieties();
@@ -70,6 +71,9 @@ const ManageFlats = ({ navigation }) => {
       .then((data) => {
         setWings(data);
         setLoadingWings(false);
+        if (data.length > 0) {
+          fetchFlatsForWing(data[0]._id); // Fetch flats for the first wing by default
+        }
       })
       .catch((error) => {
         console.error("Error fetching wings:", error);
@@ -88,6 +92,7 @@ const ManageFlats = ({ navigation }) => {
         return response.json();
       })
       .then((data) => {
+        console.log("Fetched flats:", data); // Log fetched flats
         setFlats(data);
         setFetchFlatsError(null);
       })
@@ -97,45 +102,40 @@ const ManageFlats = ({ navigation }) => {
       });
   };
 
-  const addFlat = (wingId) => {
-    fetch(
-      `https://stock-management-system-server-6mja.onrender.com/api/flats/add-flat/${wingId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: flatName }),
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to add flat: " + response.status);
+  const addFlat = async (wingId, flatName) => {
+    try {
+      const response = await fetch(
+        `https://stock-management-system-server-6mja.onrender.com/api/flats/add-flats-by-wing/${wingId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: flatName }),
         }
-        return response.json();
-      })
-      .then((data) => {
-        fetchFlatsForWing(wingId); // Refresh flats list after adding
-        setFlatName(""); // Clear input field
-      })
-      .catch((error) => {
-        console.error("Error adding flat:", error);
-        Alert.alert(
-          "Error",
-          "Failed to add flat. Please check your network connection and try again."
-        );
-      });
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to add flat: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Flat added successfully", data);
+      fetchFlatsForWing(wingId); // Refresh the flats list
+      setAddFlatModalVisible(false); // Close the modal after adding
+    } catch (error) {
+      console.error("Error adding flat:", error);
+      Alert.alert("Error", `Failed to add flat: ${error.message}`);
+    }
   };
 
   const editFlat = (flatId, newName) => {
     fetch(
-      `https://stock-management-system-server-6mja.onrender.com/api/flats/update-flat/${flatId}`,
+      `https://stock-management-system-server-6mja.onrender.com/api/flats/${flatId}`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: newName }), // Adjust as per your flat data structure
+        body: JSON.stringify({ name: newName }),
       }
     )
       .then((response) => {
@@ -156,7 +156,7 @@ const ManageFlats = ({ navigation }) => {
 
   const deleteFlat = (flatId) => {
     fetch(
-      `https://stock-management-system-server-6mja.onrender.com/api/flats/delete-flat/${flatId}`,
+      `https://stock-management-system-server-6mja.onrender.com/api/flats/${flatId}`,
       {
         method: "DELETE",
       }
@@ -200,7 +200,7 @@ const ManageFlats = ({ navigation }) => {
               <ActivityIndicator size="large" color="#6699CC" />
             ) : (
               <>
-                {wings.map((wing, index) => (
+                {wings.map((wing) => (
                   <View key={wing._id}>
                     <View style={styles.wingContainer}>
                       <Image
@@ -210,14 +210,16 @@ const ManageFlats = ({ navigation }) => {
                       <Text style={styles.wingName}>{wing.name}</Text>
                       <TouchableOpacity
                         style={styles.addButton}
-                        onPress={() => addFlat(wing._id)}
+                        onPress={() => {
+                          setSelectedWing(wing._id);
+                          setAddFlatModalVisible(true);
+                        }}
                       >
                         <Text style={styles.addButtonText}>Add Flat</Text>
                       </TouchableOpacity>
-                     
                     </View>
                     <View style={styles.divider} />
-                    {wing._id === selectedWing && flats.length > 0 && (
+                    {wing._id === selectedWing && (
                       <ScrollView>
                         {flats.map((flat) => (
                           <View key={flat._id} style={styles.flatContainer}>
@@ -265,6 +267,42 @@ const ManageFlats = ({ navigation }) => {
         ))}
       </ScrollView>
 
+      {/* Add Flat Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addFlatModalVisible}
+        onRequestClose={() => setAddFlatModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Flat Name"
+              value={flatName}
+              onChangeText={(text) => setFlatName(text)}
+            />
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  addFlat(selectedWing, flatName);
+                  setFlatName(""); // Clear input after adding
+                }}
+              >
+                <Text style={styles.modalButtonText}>Add</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setAddFlatModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Edit Flat Modal */}
       <Modal
         animationType="slide"
@@ -274,30 +312,33 @@ const ManageFlats = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Flat</Text>
             <TextInput
               style={styles.input}
-              placeholder="Flat Name"
-              value={flatName}
-              onChangeText={(text) => setFlatName(text)}
+              placeholder="Enter new Flat Name"
+              value={selectedFlat ? selectedFlat.name : ""}
+              onChangeText={(text) =>
+                setSelectedFlat({ ...selectedFlat, name: text })
+              }
             />
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={() => editFlat(selectedFlat._id, flatName)}
-            >
-              <Text style={styles.submitButtonText}>Save Changes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setEditModalVisible(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => editFlat(selectedFlat._id, selectedFlat.name)}
+              >
+                <Text style={styles.modalButtonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
 
-      {/* Delete Flat Confirmation Modal */}
+      {/* Delete Flat Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -306,22 +347,23 @@ const ManageFlats = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirm Delete</Text>
-            <Text style={styles.deleteText}>
+            <Text style={styles.modalText}>
               Are you sure you want to delete this flat?
             </Text>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => deleteFlat(selectedFlat._id)}
-            >
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setDeleteModalVisible(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => deleteFlat(selectedFlat._id)}
+              >
+                <Text style={styles.modalButtonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setDeleteModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>No</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -332,141 +374,130 @@ const ManageFlats = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5FCFF",
     padding: 20,
+    backgroundColor: "#F5FCFF",
   },
   headerText: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
+    marginBottom: 10,
+  },
+  errorText: {
+    color: "red",
+  },
+  scrollView: {
+    paddingVertical: 10,
   },
   societyContainer: {
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#6699CC",
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
   },
   societyHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
-  },
-  buildingImage: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
+    padding: 10,
   },
   societyName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
+    marginLeft: 10,
+  },
+  buildingImage: {
+    width: 50,
+    height: 50,
   },
   divider: {
-    borderBottomColor: "#CCCCCC",
-    borderBottomWidth: 1,
-    marginBottom: 10,
+    height: 1,
+    backgroundColor: "#CCCCCC",
+    marginVertical: 10,
   },
   wingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    padding: 10,
   },
   wingImage: {
-    width: 30,
-    height: 30,
-    marginRight: 10,
+    width: 40,
+    height: 40,
   },
   wingName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
-    flex: 1,
+    marginLeft: 10,
   },
   addButton: {
-    backgroundColor: "#FFBF00",
-    paddingVertical: 5,
+    marginLeft: "auto",
     paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: "#6699CC",
     borderRadius: 5,
   },
   addButtonText: {
-    color: "white",
-    fontWeight: "bold",
+    color: "#FFFFFF",
+    fontSize: 16,
   },
   flatContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    padding: 10,
   },
   flatImage: {
-    width: 60,
-    height: 60,
-    marginRight: 10,
+    width: 30,
+    height: 30,
   },
   flatName: {
     fontSize: 16,
-    flex: 1,
+    fontWeight: "bold",
+    marginLeft: 10,
   },
   flatIcons: {
     flexDirection: "row",
+    marginLeft: "auto",
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: "white",
+    width: 300,
     padding: 20,
+    backgroundColor: "#FFFFFF",
     borderRadius: 10,
-    width: "80%",
     alignItems: "center",
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
   input: {
+    width: "100%",
+    padding: 10,
     borderWidth: 1,
     borderColor: "#CCCCCC",
     borderRadius: 5,
-    padding: 10,
-    width: "100%",
     marginBottom: 10,
   },
-  submitButton: {
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     backgroundColor: "#6699CC",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
     borderRadius: 5,
-    marginTop: 10,
+    alignItems: "center",
   },
-  submitButtonText: {
-    color: "white",
+  modalButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+  },
+  modalText: {
+    fontSize: 18,
     fontWeight: "bold",
-  },
-  cancelButton: {
-    marginTop: 10,
-  },
-  cancelButtonText: {
-    color: "#666666",
-    fontWeight: "bold",
-  },
-  deleteText: {
     marginBottom: 20,
-  },
-  deleteButton: {
-    backgroundColor: "red",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  deleteButtonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  errorText: {
-    color: "red",
-    textAlign: "center",
-    marginTop: 10,
   },
 });
 
