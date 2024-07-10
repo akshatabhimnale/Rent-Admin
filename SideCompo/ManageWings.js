@@ -9,7 +9,6 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -73,12 +72,6 @@ const ManageWings = ({ navigation }) => {
         console.error("Error fetching wings:", error);
         setLoadingWings(false); // Stop loading wings on error
       });
-  };
-
-  const toggleModal = (society) => {
-    setSelectedBuilding(society);
-    setIsModalVisible(true);
-    fetchWingsForSociety(society._id); // Fetch wings when modal is toggled
   };
 
   const addWing = () => {
@@ -193,7 +186,7 @@ const ManageWings = ({ navigation }) => {
               <Text style={styles.societyName}>{society.name}</Text>
               <TouchableOpacity
                 style={styles.addButton}
-                onPress={() => toggleModal(society)}
+                onPress={() => setIsModalVisible(true)}
               >
                 <Text style={styles.addButtonText}>Add Wing</Text>
               </TouchableOpacity>
@@ -201,26 +194,26 @@ const ManageWings = ({ navigation }) => {
             <View style={styles.divider} />
             {loadingWings ? (
               <ActivityIndicator size="large" color="#6699CC" />
+            ) : wings.length === 0 ? (
+              <Text>No wings for this Society</Text>
             ) : (
-              <ScrollView>
-                {wings.map((wing) => (
-                  <View key={wing._id} style={styles.wingContainer}>
-                    <Image
-                      source={require("../assets/images/wing.png")}
-                      style={styles.wingImage}
-                    />
-                    <Text style={styles.wingName}>{wing.name}</Text>
-                    <View style={styles.wingIcons}>
-                      <TouchableOpacity onPress={() => editWing(wing._id)}>
-                        <FontAwesome name="edit" size={30} color="#6699CC" />
-                      </TouchableOpacity>
-                      <TouchableOpacity onPress={() => deleteWing(wing._id)}>
-                        <FontAwesome name="trash" size={30} color="red" />
-                      </TouchableOpacity>
-                    </View>
+              wings.map((wing) => (
+                <View key={wing._id} style={styles.wingContainer}>
+                  <Image
+                    source={require("../assets/images/wing.png")}
+                    style={styles.wingImage}
+                  />
+                  <Text style={styles.wingName}>{wing.name}</Text>
+                  <View style={styles.wingIcons}>
+                    <TouchableOpacity onPress={() => editWing(wing._id)}>
+                      <FontAwesome name="edit" size={30} color="#6699CC" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => deleteWing(wing._id)}>
+                      <FontAwesome name="trash" size={30} color="red" />
+                    </TouchableOpacity>
                   </View>
-                ))}
-              </ScrollView>
+                </View>
+              ))
             )}
           </View>
         ))}
@@ -389,7 +382,7 @@ const styles = StyleSheet.create({
   },
   wingIcons: {
     flexDirection: "row",
-    gap:15,
+    gap: 15,
   },
   modalContainer: {
     flex: 1,
