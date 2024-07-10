@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from "react";
+import { FontAwesome } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  View,
+  ActivityIndicator,
   Image,
   Modal,
-  TouchableOpacity,
-  TextInput,
   ScrollView,
-  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
 
 const ManageWings = ({ navigation }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [societies, setSocieties] = useState([]);
-  const [wings, setWings] = useState([]);
+  const [wingsBySociety, setWingsBySociety] = useState({});
   const [wingName, setWingName] = useState("");
-  const [fetchError, setFetchError] = useState(null); // State to store fetch error
+  const [fetchError, setFetchError] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedWing, setSelectedWing] = useState(null);
-  const [loadingWings, setLoadingWings] = useState(true); // State to track loading wings
+  const [loadingWings, setLoadingWings] = useState(false);
 
   useEffect(() => {
     fetchSocieties();
@@ -40,37 +40,44 @@ const ManageWings = ({ navigation }) => {
       })
       .then((data) => {
         setSocieties(data);
-        setFetchError(null); // Reset fetch error if successful
-        // Fetch wings for the first society in the list by default
-        if (data.length > 0) {
-          fetchWingsForSociety(data[0]._id);
-          setSelectedBuilding(data[0]);
-        }
+        setFetchError(null);
+        fetchWingsForAllSocieties(data);
       })
       .catch((error) => {
         console.error("Error fetching societies:", error);
-        setFetchError(error.message); // Store error message
+        setFetchError(error.message);
       });
   };
 
-  const fetchWingsForSociety = (societyId) => {
-    setLoadingWings(true); // Start loading wings
-    fetch(
-      `https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${societyId}`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setWings(data);
-        setLoadingWings(false); // Stop loading wings
+  const fetchWingsForAllSocieties = (societies) => {
+    setLoadingWings(true);
+    const fetchPromises = societies.map((society) =>
+      fetch(
+        `https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${society._id}`
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          return { societyId: society._id, wings: data };
+        })
+    );
+
+    Promise.all(fetchPromises)
+      .then((results) => {
+        const wingsBySociety = {};
+        results.forEach(({ societyId, wings }) => {
+          wingsBySociety[societyId] = wings;
+        });
+        setWingsBySociety(wingsBySociety);
+        setLoadingWings(false);
       })
       .catch((error) => {
         console.error("Error fetching wings:", error);
-        setLoadingWings(false); // Stop loading wings on error
+        setLoadingWings(false);
       });
   };
 
@@ -92,7 +99,6 @@ const ManageWings = ({ navigation }) => {
         return response.json();
       })
       .then((data) => {
-        // Fetch updated list of wings after adding a wing
         fetchWingsForSociety(selectedBuilding._id);
         setIsModalVisible(false);
         setWingName("");
@@ -102,14 +108,48 @@ const ManageWings = ({ navigation }) => {
       });
   };
 
-  const editWing = (wingId) => {
-    setSelectedWing(wingId);
+  const fetchWingsForSociety = (societyId) => {
+    setLoadingWings(true);
+    fetch(
+      `https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${societyId}`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setWingsBySociety((prev) => ({
+          ...prev,
+          [societyId]: data,
+        }));
+        setLoadingWings(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching wings:", error);
+        setLoadingWings(false);
+      });
+  };
+
+  const editWing = (wingId, societyId) => {
+    console.log(wingId + "==" + societyId);
+    const wingToEdit = wingsBySociety[societyId].find(
+      (wing) => wing._id === wingId
+    );
+    setSelectedWing({ wingId, societyId });
+    setWingName(wingToEdit.name);
     setEditModalVisible(true);
   };
 
   const updateWing = () => {
+    if (!selectedWing || !selectedWing.wingId || !selectedWing.societyId) {
+      console.error("Invalid selected wing or society ID");
+      return;
+    }
+
     fetch(
-      `https://stock-management-system-server-6mja.onrender.com/api/wings/${selectedWing}`,
+      `https://stock-management-system-server-6mja.onrender.com/api/wings/${selectedWing.wingId}`,
       {
         method: "PUT",
         headers: {
@@ -124,28 +164,36 @@ const ManageWings = ({ navigation }) => {
         }
         return response.json();
       })
-      .then((data) => {
-        // Update wings array with updated wing data
-        const updatedWings = wings.map((wing) =>
-          wing._id === selectedWing ? data : wing
+      .then((updatedWing) => {
+        const updatedWings = wingsBySociety[selectedWing.societyId].map(
+          (wing) => (wing._id === selectedWing.wingId ? updatedWing : wing)
         );
-        setWings(updatedWings);
+        setWingsBySociety((prev) => ({
+          ...prev,
+          [selectedWing.societyId]: updatedWings,
+        }));
         setEditModalVisible(false);
         setWingName("");
+        setSelectedWing(null);
       })
       .catch((error) => {
         console.error("Error updating wing:", error);
       });
   };
 
-  const deleteWing = (wingId) => {
-    setSelectedWing(wingId);
+  const deleteWing = (wingId, societyId) => {
+    setSelectedWing({ wingId, societyId });
     setDeleteModalVisible(true);
   };
 
   const confirmDeleteWing = () => {
+    if (!selectedWing || !selectedWing.wingId || !selectedWing.societyId) {
+      console.error("Invalid selected wing or society ID");
+      return;
+    }
+
     fetch(
-      `https://stock-management-system-server-6mja.onrender.com/api/wings/${selectedWing}`,
+      `https://stock-management-system-server-6mja.onrender.com/api/wings/${selectedWing.wingId}`,
       {
         method: "DELETE",
       }
@@ -157,10 +205,15 @@ const ManageWings = ({ navigation }) => {
         return response.json();
       })
       .then(() => {
-        // Remove deleted wing from wings array
-        const updatedWings = wings.filter((wing) => wing._id !== selectedWing);
-        setWings(updatedWings);
+        const updatedWings = wingsBySociety[selectedWing.societyId].filter(
+          (wing) => wing._id !== selectedWing.wingId
+        );
+        setWingsBySociety((prev) => ({
+          ...prev,
+          [selectedWing.societyId]: updatedWings,
+        }));
         setDeleteModalVisible(false);
+        setSelectedWing(null);
       })
       .catch((error) => {
         console.error("Error deleting wing:", error);
@@ -186,7 +239,10 @@ const ManageWings = ({ navigation }) => {
               <Text style={styles.societyName}>{society.name}</Text>
               <TouchableOpacity
                 style={styles.addButton}
-                onPress={() => setIsModalVisible(true)}
+                onPress={() => {
+                  setIsModalVisible(true);
+                  setSelectedBuilding(society);
+                }}
               >
                 <Text style={styles.addButtonText}>Add Wing</Text>
               </TouchableOpacity>
@@ -194,10 +250,10 @@ const ManageWings = ({ navigation }) => {
             <View style={styles.divider} />
             {loadingWings ? (
               <ActivityIndicator size="large" color="#6699CC" />
-            ) : wings.length === 0 ? (
+            ) : wingsBySociety[society._id]?.length === 0 ? (
               <Text>No wings for this Society</Text>
             ) : (
-              wings.map((wing) => (
+              wingsBySociety[society._id]?.map((wing) => (
                 <View key={wing._id} style={styles.wingContainer}>
                   <Image
                     source={require("../assets/images/wing.png")}
@@ -205,10 +261,14 @@ const ManageWings = ({ navigation }) => {
                   />
                   <Text style={styles.wingName}>{wing.name}</Text>
                   <View style={styles.wingIcons}>
-                    <TouchableOpacity onPress={() => editWing(wing._id)}>
+                    <TouchableOpacity
+                      onPress={() => editWing(wing._id, society._id)}
+                    >
                       <FontAwesome name="edit" size={30} color="#6699CC" />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => deleteWing(wing._id)}>
+                    <TouchableOpacity
+                      onPress={() => deleteWing(wing._id, society._id)}
+                    >
                       <FontAwesome name="trash" size={30} color="red" />
                     </TouchableOpacity>
                   </View>
@@ -265,6 +325,7 @@ const ManageWings = ({ navigation }) => {
               value={wingName}
               onChangeText={(text) => setWingName(text)}
             />
+
             <TouchableOpacity style={styles.submitButton} onPress={updateWing}>
               <Text style={styles.submitButtonText}>Update Wing</Text>
             </TouchableOpacity>
@@ -278,7 +339,7 @@ const ManageWings = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/* Delete Wing Modal */}
+      {/* Delete Confirmation Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -287,24 +348,21 @@ const ManageWings = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirm Delete</Text>
-            <Text style={styles.deleteMessage}>
+            <Text style={styles.modalTitle}>
               Are you sure you want to delete this wing?
             </Text>
-            <View style={styles.deleteButtonContainer}>
-              <TouchableOpacity
-                style={[styles.deleteButton, { backgroundColor: "red" }]}
-                onPress={confirmDeleteWing}
-              >
-                <Text style={styles.deleteButtonText}>Yes</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.deleteButton, { backgroundColor: "#6699CC" }]}
-                onPress={() => setDeleteModalVisible(false)}
-              >
-                <Text style={styles.deleteButtonText}>No</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={confirmDeleteWing}
+            >
+              <Text style={styles.submitButtonText}>Yes, Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setDeleteModalVisible(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
