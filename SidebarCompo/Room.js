@@ -6,18 +6,22 @@ import {
   FlatList,
   ActivityIndicator,
   Image,
+  TouchableOpacity,
 } from "react-native";
 
 const Room = () => {
   const [flats, setFlats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedType, setSelectedType] = useState("All");
 
   useEffect(() => {
     const fetchFlats = async () => {
       try {
         const response = await fetch(
-          "https://stock-management-system-server-6mja.onrender.com/api/flats"
+          selectedType === "All"
+            ? "https://stock-management-system-server-6mja.onrender.com/api/flats"
+            : `https://stock-management-system-server-6mja.onrender.com/api/flats/type/${selectedType}`
         );
 
         if (!response.ok) {
@@ -35,7 +39,7 @@ const Room = () => {
     };
 
     fetchFlats();
-  }, []);
+  }, [selectedType]);
 
   const renderItem = ({ item }) => (
     <View style={styles.flatItem}>
@@ -63,6 +67,25 @@ const Room = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.tabsContainer}>
+        {["All", "1R", "1RK", "1BHK", "2BHK", "3BHK"].map((type) => (
+          <TouchableOpacity
+            key={type}
+            style={[styles.tab, selectedType === type && styles.activeTab]}
+            onPress={() => setSelectedType(type)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                selectedType === type && styles.activeTabText,
+              ]}
+            >
+              {type}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <FlatList
         data={flats}
         renderItem={renderItem}
@@ -78,6 +101,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 16,
+  },
+  tab: {
+    padding: 10,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: "green",
+  },
+  tabText: {
+    color: "#000",
+    fontWeight: "bold",
+  },
+  activeTabText: {
+    color: "green",
   },
   flatItem: {
     flexDirection: "row",
