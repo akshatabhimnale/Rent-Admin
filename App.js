@@ -1,24 +1,25 @@
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import HomeScreen from "./Screens/Home/HomeScreen";
-import LoginScreen from "./Screens/Login/LoginScreen";
-import Emptyflats from "./SidebarCompo/Emptyflats";
-import Flats from "./SidebarCompo/Flats";
-import Pendingstatus from "./SidebarCompo/Pendingstatus";
-import Recieverent from "./SidebarCompo/Recieverent";
-import Room from "./SidebarCompo/Room";
-import Totalbuildings from "./SidebarCompo/Totalbuildings";
-import ManageSociety from "./SideCompo/ManageSociety";
-import ManageWings from "./SideCompo/ManageWings.js";
-import ManageFlats from "./SideCompo/ManageFlats";
-import Report from "./SideCompo/Report";
-import Tenant from "./SideCompo/Tenant";
-import Expense from "./SideCompo/Expense";
-import ManageTenants from "./SideCompo/ManageTenants.js";
-import Wings from "./SidebarCompo/Wings";
-import FlatsOnRent from "./SidebarCompo/FlatsOnRent.js"
-import Userdetails from "./SidebarCompo/Userdetails";
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+
+import HomeScreen from './Screens/Home/HomeScreen';
+import LoginScreen from './Screens/Login/LoginScreen';
+import Emptyflats from './SidebarCompo/Emptyflats';
+import Flats from './SidebarCompo/Flats';
+import FlatsOnRent from './SidebarCompo/FlatsOnRent.js';
+import Pendingstatus from './SidebarCompo/Pendingstatus';
+import Recieverent from './SidebarCompo/Recieverent';
+import Room from './SidebarCompo/Room';
+import Totalbuildings from './SidebarCompo/Totalbuildings';
+import Userdetails from './SidebarCompo/Userdetails';
+import Wings from './SidebarCompo/Wings';
+import Expense from './SideCompo/Expense';
+import ManageFlats from './SideCompo/ManageFlats';
+import ManageSociety from './SideCompo/ManageSociety';
+import ManageTenants from './SideCompo/ManageTenants.js';
+import ManageWings from './SideCompo/ManageWings.js';
+import Report from './SideCompo/Report';
+import Tenant from './SideCompo/Tenant';
 
 const Stack = createNativeStackNavigator();
 

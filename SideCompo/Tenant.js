@@ -1,15 +1,9 @@
-import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-  Modal,
-  Button,
-} from "react-native";
-import RNHTMLtoPDF from "react-native-html-to-pdf";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import React, { useEffect, useState } from 'react';
+import { Button, FlatList, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const Tenant = () => {
   const [tenants, setTenants] = useState([]);
@@ -18,6 +12,9 @@ const Tenant = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [base64Pdf, setBase64Pdf] = useState(null);
+  const [pdfUri, setPdfUri] = useState(null);
+  const [showPdf, setShowPdf] = useState(false);
   useEffect(() => {
     const fetchTenants = async () => {
       try {
@@ -43,133 +40,131 @@ const Tenant = () => {
   const createPDF = async (tenant) => {
     try {
       const html = `
-        <html>
-          <head>
-            <style>
-              table {
-                width: 100%;
-                border-collapse: collapse;
-              }
-              table, th, td {
-                border: 1px solid black;
-              }
-              th, td {
-                padding: 15px;
-                text-align: left;
-              }
-              th {
-                background-color: #f2f2f2;
-              }
-            </style>
-          </head>
-          <body>
-            <h1>Tenant Details</h1>
-            <table>
-              <tr>
-                <th>Field</th>
-                <th>Value</th>
-              </tr>
-              <tr>
-                <td>Name</td>
-                <td>${tenant.name}</td>
-              </tr>
-              <tr>
-                <td>Phone Number</td>
-                <td>${tenant.ph_no}</td>
-              </tr>
-              <tr>
-                <td>Email</td>
-                <td>${tenant.emailId}</td>
-              </tr>
-              <tr>
-                <td>Age</td>
-                <td>${tenant.age}</td>
-              </tr>
-              <tr>
-                <td>Maintenance Amount</td>
-                <td>${tenant.maintaince}</td>
-              </tr>
-              <tr>
-                <td>Final Rent</td>
-                <td>${tenant.final_rent}</td>
-              </tr>
-              <tr>
-                <td>Deposit</td>
-                <td>${tenant.deposit}</td>
-              </tr>
-              <tr>
-                <td>Current Meter Reading</td>
-                <td>${tenant.current_meter_reading}</td>
-              </tr>
-              <tr>
-                <td>Rent Start Date</td>
-                <td>${tenant.rent_form_date}</td>
-              </tr>
-              <tr>
-                <td>Permanent Address</td>
-                <td>${tenant.permanant_address}</td>
-              </tr>
-              <tr>
-                <td>Previous Address</td>
-                <td>${tenant.previous_address}</td>
-              </tr>
-              <tr>
-                <td>Nature of Work</td>
-                <td>${tenant.nature_of_work}</td>
-              </tr>
-              <tr>
-                <td>Working Address</td>
-                <td>${tenant.working_address}</td>
-              </tr>
-              <tr>
-                <td>Work Phone Number</td>
-                <td>${tenant.work_ph_no}</td>
-              </tr>
-              <tr>
-                <td>Family Members</td>
-                <td>${
-                  tenant.family_members
-                    ? tenant.family_members.join(", ")
-                    : "N/A"
-                }</td>
-              </tr>
-              <tr>
-                <td>Reference Persons</td>
-                <td>${tenant.reference_person1}, ${
-        tenant.reference_person2
-      }</td>
-              </tr>
-              <tr>
-                <td>Agent Name</td>
-                <td>${tenant.agent_name}</td>
-              </tr>
-              <tr>
-                <td>Flat ID</td>
-                <td>${tenant.flat_id}</td>
-              </tr>
-              <tr>
-                <td>Rent Status</td>
-                <td>${tenant.rent_status}</td>
-              </tr>
-            </table>
-          </body>
-        </html>
-      `;
+      <html>
+        <head>
+          <style>
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            table, th, td {
+              border: 1px solid black;
+            }
+            th, td {
+              padding: 15px;
+              text-align: left;
+            }
+            th {
+              background-color: #f2f2f2;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Tenant Details</h1>
+          <table>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+            </tr>
+            <tr>
+              <td>Name</td>
+              <td>${tenant.name}</td>
+            </tr>
+            <tr>
+              <td>Phone Number</td>
+              <td>${tenant.ph_no}</td>
+            </tr>
+            <tr>
+              <td>Email</td>
+              <td>${tenant.emailId}</td>
+            </tr>
+            <tr>
+              <td>Age</td>
+              <td>${tenant.age}</td>
+            </tr>
+            <tr>
+              <td>Maintenance Amount</td>
+              <td>${tenant.maintaince}</td>
+            </tr>
+            <tr>
+              <td>Final Rent</td>
+              <td>${tenant.final_rent}</td>
+            </tr>
+            <tr>
+              <td>Deposit</td>
+              <td>${tenant.deposit}</td>
+            </tr>
+            <tr>
+              <td>Current Meter Reading</td>
+              <td>${tenant.current_meter_reading}</td>
+            </tr>
+            <tr>
+              <td>Rent Start Date</td>
+              <td>${tenant.rent_form_date}</td>
+            </tr>
+            <tr>
+              <td>Permanent Address</td>
+              <td>${tenant.permanant_address}</td>
+            </tr>
+            <tr>
+              <td>Previous Address</td>
+              <td>${tenant.previous_address}</td>
+            </tr>
+            <tr>
+              <td>Nature of Work</td>
+              <td>${tenant.nature_of_work}</td>
+            </tr>
+            <tr>
+              <td>Working Address</td>
+              <td>${tenant.working_address}</td>
+            </tr>
+            <tr>
+              <td>Work Phone Number</td>
+              <td>${tenant.work_ph_no}</td>
+            </tr>
+            <tr>
+              <td>Family Members</td>
+                            <td>${
+                              tenant.family_members
+                                ? tenant.family_members.join(", ")
+                                : "N/A"
+                            }</td>
+            </tr>
+            <tr>
+              <td>Reference Persons</td>
+              <td>${tenant.reference_person1}, ${tenant.reference_person2}</td>
+            </tr>
+            <tr>
+              <td>Agent Name</td>
+              <td>${tenant.agent_name}</td>
+            </tr>
+            <tr>
+              <td>Flat ID</td>
+              <td>${tenant.flat_id}</td>
+            </tr>
+            <tr>
+              <td>Rent Status</td>
+              <td>${tenant.rent_status}</td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `;
 
-      const options = {
-        html,
-        fileName: `Tenant_${tenant.name}`,
-        directory: "Documents",
-      };
+      const { uri } = await Print.printToFileAsync({ html });
 
-      if (RNHTMLtoPDF && RNHTMLtoPDF.convert) {
-        const file = await RNHTMLtoPDF.convert(options);
-        alert(`PDF saved to: ${file.filePath}`);
-      } else {
-        alert("PDF generation not supported.");
+      let downloadDirectory = FileSystem.documentDirectory;
+      if (Platform.OS === "android") {
+        downloadDirectory = FileSystem.cacheDirectory;
+      } else if (Platform.OS === "ios") {
+        downloadDirectory = FileSystem.documentDirectory;
       }
+      const fileUri = `${downloadDirectory}${tenant.name}_Tenant_Details.pdf`;
+      await FileSystem.moveAsync({ from: uri, to: fileUri });
+      await Sharing.shareAsync(fileUri);
     } catch (error) {
       console.error("Error creating PDF: ", error);
+      alert("Error creating PDF.");
     }
   };
 
@@ -274,12 +269,12 @@ const Tenant = () => {
                 <Text style={styles.boldLabel}>Work Phone Number:</Text>{" "}
                 {selectedTenant.work_ph_no}
               </Text>
-              <Text style={styles.detail}>
+              {/* <Text style={styles.detail}>
                 <Text style={styles.boldLabel}>Family Members:</Text>{" "}
                 {selectedTenant.family_members
                   ? selectedTenant.family_members.join(", ")
                   : "N/A"}
-              </Text>
+              </Text> */}
               <Text style={styles.detail}>
                 <Text style={styles.boldLabel}>Reference Persons:</Text>{" "}
                 {selectedTenant.reference_person1},{" "}
