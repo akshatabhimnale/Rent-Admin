@@ -241,7 +241,7 @@ const HomeScreen = () => {
       )}
 
       <Animated.View style={[styles.sidebar, { left: sidebarAnim }]}>
-        <Text style={styles.heading}>Hi Rutuja,</Text>
+ 
         <View
           style={{
             alignItems: "center",
