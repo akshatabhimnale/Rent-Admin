@@ -13,7 +13,7 @@ import {
 } from "react-native";
 
 const ManageTenants = ({ navigation }) => {
-  
+   const [tenantsByFlat, setTenantsByFlat] = useState({});
   const [tenants, setTenants] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
@@ -54,23 +54,24 @@ const ManageTenants = ({ navigation }) => {
       });
   };
 
-   const fetchTenantsForFlat = (flatId) => {
-     fetch(
-       `https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`
-     )
-       .then((response) => {
-         if (!response.ok) {
-           throw new Error("Network response was not ok");
-         }
-         return response.json();
-       })
-       .then((data) => {
-         setTenants(data);
-       })
-       .catch((error) => {
-         console.error("Error fetching tenants:", error);
-       });
-   };
+ const fetchTenantsForFlat = (flatId) => {
+   if (tenantsByFlat[flatId]) return; // Prevent fetching if already loaded
+   fetch(
+     `https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`
+   )
+     .then((response) => {
+       if (!response.ok) {
+         throw new Error("Network response was not ok");
+       }
+       return response.json();
+     })
+     .then((data) => {
+       setTenantsByFlat((prev) => ({ ...prev, [flatId]: data }));
+     })
+     .catch((error) => {
+       console.error("Error fetching tenants:", error);
+     });
+ };
 
   const fetchWingsForAllSocieties = (societies) => {
     setLoadingWings(true);
@@ -124,7 +125,6 @@ const ManageTenants = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}>Manage Tenants</Text>
-
       {fetchError && (
         <Text style={styles.errorText}>Error fetching data: {fetchError}</Text>
       )}
@@ -147,18 +147,43 @@ const ManageTenants = ({ navigation }) => {
                             {wing.flats.map((flat) => {
                               fetchTenantsForFlat(flat._id); // Fetch tenants for the current flat
                               return (
-                                <View key={flat._id} style={styles.flatContainer}>
-                                  <Text style={styles.flatName}>{society.name}/{wing.name}/{flat.name}</Text>
-                                  {/* Tenant listing */}
-                                  {tenants.length > 0 && tenants.map((tenant) => (
-                                    <Text key={tenant._id}>{tenant.name}</Text>
-                                  ))}
+                                <View
+                                  key={flat._id}
+                                  style={styles.flatContainer}
+                                >
+                                  <Text style={styles.flatName}>
+                                    {society.name}/{wing.name}/{flat.name}
+                                  </Text>
+                                  <View style={styles.tenantListingContainer}>
+                                    {/* Tenant listing */}
+                                    {tenantsByFlat[flat._id]?.map((tenant) => (
+                                      <View
+                                        key={tenant._id}
+                                        style={{
+                                          flexDirection: "row",
+                                          alignItems: "center",
+                                        }}
+                                      >
+                                        <Image
+                                          source={
+                                            tenant.gender === "female"
+                                              ? require("../assets/images/female.png")
+                                              : require("../assets/images/male.png")
+                                          }
+                                          style={styles.image}
+                                        />
+                                        <Text>{tenant.name}</Text>
+                                      </View>
+                                    ))}
+                                  </View>
                                 </View>
                               );
                             })}
                           </View>
                         ) : (
-                          <Text style={styles.noFlatsText}>No Flats Available</Text>
+                          <Text style={styles.noFlatsText}>
+                            No Flats Available
+                          </Text>
                         )}
                       </View>
                     </View>
@@ -174,12 +199,14 @@ const ManageTenants = ({ navigation }) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
     backgroundColor: "#F5FCFF",
+  },
+  tenantListingContainer: {
+    flexDirection: "row",
   },
   headerText: {
     fontSize: 24,
@@ -224,6 +251,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#DDD",
     marginVertical: 10,
   },
+  image: {
+    width: 60,
+    height: 80,
+    borderRadius: 30,
+    marginRight: 16,
+  },
   wingContainer: {
     marginBottom: 1,
     padding: 10,
@@ -245,16 +278,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "bold",
   },
- 
- 
+
   flatsContainer: {
     marginTop: 10,
   },
   flatContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "column",
     backgroundColor: "#FFF",
-   
   },
   flatImage: {
     width: 40,
@@ -262,7 +292,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   flatName: {
-  fontWeight:"bold",
+    fontWeight: "bold",
   },
   flatIcons: {
     flexDirection: "row",
