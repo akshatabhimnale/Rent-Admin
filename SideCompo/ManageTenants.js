@@ -13,7 +13,7 @@ import {
 } from "react-native";
 
 const ManageTenants = ({ navigation }) => {
-   const [tenantsByFlat, setTenantsByFlat] = useState({});
+  const [tenantsByFlat, setTenantsByFlat] = useState({});
   const [tenants, setTenants] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
@@ -28,6 +28,7 @@ const ManageTenants = ({ navigation }) => {
   const [loadingWings, setLoadingWings] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [flatName, setFlatName] = useState("");
+  const [selectedTenant, setSelectedTenant] = useState(null);
 
   useEffect(() => {
     fetchSocieties();
@@ -54,24 +55,24 @@ const ManageTenants = ({ navigation }) => {
       });
   };
 
- const fetchTenantsForFlat = (flatId) => {
-   if (tenantsByFlat[flatId]) return; // Prevent fetching if already loaded
-   fetch(
-     `https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`
-   )
-     .then((response) => {
-       if (!response.ok) {
-         throw new Error("Network response was not ok");
-       }
-       return response.json();
-     })
-     .then((data) => {
-       setTenantsByFlat((prev) => ({ ...prev, [flatId]: data }));
-     })
-     .catch((error) => {
-       console.error("Error fetching tenants:", error);
-     });
- };
+  const fetchTenantsForFlat = (flatId) => {
+    if (tenantsByFlat[flatId]) return; // Prevent fetching if already loaded
+    fetch(
+      `https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setTenantsByFlat((prev) => ({ ...prev, [flatId]: data }));
+      })
+      .catch((error) => {
+        console.error("Error fetching tenants:", error);
+      });
+  };
 
   const fetchWingsForAllSocieties = (societies) => {
     setLoadingWings(true);
@@ -122,6 +123,16 @@ const ManageTenants = ({ navigation }) => {
       });
   };
 
+  const handleEditTenant = (tenant) => {
+    setSelectedTenant(tenant);
+    setEditModalVisible(true);
+  };
+
+  const handleDeleteTenant = (tenant) => {
+    setSelectedTenant(tenant);
+    setDeleteModalVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}>Manage Tenants</Text>
@@ -162,20 +173,60 @@ const ManageTenants = ({ navigation }) => {
                                         style={{
                                           flexDirection: "row",
                                           alignItems: "center",
+                                          justifyContent: "space-between",
+                                          width: "100%",
+                                          shadowColor: "#000",
+                                          shadowOpacity: 0.1,
+                                          shadowOffset: { width: 0, height: 1 },
+                                          shadowRadius: 3,
+                                          elevation: 5,
                                         }}
                                       >
-                                        <Image
-                                          source={
-                                            tenant.gender === "female"
-                                              ? require("../assets/images/female.png")
-                                              : require("../assets/images/male.png")
-                                          }
-                                          style={styles.image}
-                                        />
-                                        <Text>{tenant.name}</Text>
+                                        <View
+                                          style={{
+                                            flexDirection: "row",
+                                            alignItems: "center",
+                                            margin: 5,
+                                          }}
+                                        >
+                                          <Image
+                                            source={
+                                              tenant.gender === "female"
+                                                ? require("../assets/images/female.png")
+                                                : require("../assets/images/male.png")
+                                            }
+                                            style={styles.image}
+                                          />
+                                          <Text>{tenant.name}</Text>
+                                        </View>
+                                        <View style={styles.flatIcons}>
+                                          <TouchableOpacity
+                                            onPress={() =>
+                                              handleEditTenant(tenant)
+                                            }
+                                          >
+                                            <FontAwesome
+                                              name="edit"
+                                              size={30}
+                                              color="#6699CC"
+                                            />
+                                          </TouchableOpacity>
+                                          <TouchableOpacity
+                                            onPress={() =>
+                                              handleDeleteTenant(tenant)
+                                            }
+                                          >
+                                            <FontAwesome
+                                              name="trash"
+                                              size={30}
+                                              color="red"
+                                            />
+                                          </TouchableOpacity>
+                                        </View>
                                       </View>
                                     ))}
                                   </View>
+                                  <View style={styles.divider} />
                                 </View>
                               );
                             })}
@@ -191,10 +242,92 @@ const ManageTenants = ({ navigation }) => {
                 )}
               </Text>
             </View>
-            <View style={styles.divider} />
+           
           </View>
         ))}
       </ScrollView>
+
+      {/* Edit Tenant Modal */}
+      <Modal
+        visible={editModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Tenant Details</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              value={selectedTenant?.name}
+              onChangeText={(text) =>
+                setSelectedTenant({ ...selectedTenant, name: text })
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              value={selectedTenant?.phoneNumber}
+              onChangeText={(text) =>
+                setSelectedTenant({ ...selectedTenant, phoneNumber: text })
+              }
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.saveButton]}
+                onPress={() => {
+                  // Save changes logic here
+                  setEditModalVisible(false);
+                }}
+              >
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete Tenant Confirmation Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Confirm Delete</Text>
+            <Text>
+              Are you sure you want to delete{" "}
+              {selectedTenant?.name ? selectedTenant.name : "this tenant"}?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => setDeleteModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.deleteButton]}
+                onPress={() => {
+                  // Delete logic here
+                  setDeleteModalVisible(false);
+                }}
+              >
+                <Text style={styles.buttonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -202,153 +335,116 @@ const ManageTenants = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#F5FCFF",
-  },
-  tenantListingContainer: {
-    flexDirection: "row",
+    backgroundColor: "#F9F9F9",
+    padding: 10,
   },
   headerText: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-    color: "#000",
+    marginBottom: 10,
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 10,
+  },
+  scrollView: {
+    paddingBottom: 20,
   },
   societyContainer: {
     marginBottom: 20,
-    padding: 16,
-    backgroundColor: "#FFF",
-    borderRadius: 10,
+    borderRadius:10,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 3,
     elevation: 5,
   },
-  wingflatcontainer: {
-    flexDirection: "column",
-  },
-  flatListingContainer: {
-    marginLeft: 10,
-  },
   societyHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 1,
-  },
-  buildingImage: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
-  },
-  societyName: {
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#DDD",
-    marginVertical: 10,
-  },
-  image: {
-    width: 60,
-    height: 80,
-    borderRadius: 30,
-    marginRight: 16,
-  },
-  wingContainer: {
-    marginBottom: 1,
-    padding: 10,
-    display: "flex",
-    flexDirection: "row",
     backgroundColor: "#fff",
+    padding: 10,
     borderRadius: 5,
   },
-  wingImageNameContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  wingImage: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-  wingName: {
-    fontSize: 15,
+  societyName: {
+    fontSize: 20,
     fontWeight: "bold",
+    color: "white",
   },
-
+  flatListingContainer: {
+    marginTop: 10,
+  },
   flatsContainer: {
     marginTop: 10,
   },
   flatContainer: {
-    flexDirection: "column",
-    backgroundColor: "#FFF",
-  },
-  flatImage: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
+    marginBottom: 10,
   },
   flatName: {
+    fontSize: 18,
     fontWeight: "bold",
+  },
+  tenantListingContainer: {
+    marginTop: 5,
+    
+  },
+  noFlatsText: {
+    fontStyle: "italic",
+    color: "#999",
   },
   flatIcons: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    width: 80,
+    justifyContent: "space-between",
+    width: 70,
+    marginRight: 5,
   },
-  noFlatsText: {
-    textAlign: "center",
-    fontStyle: "italic",
-    color: "#666",
+  image: {
+    width: 50,
+    height: 70,
+    marginRight: 10,
   },
-  errorText: {
-    color: "red",
-    textAlign: "center",
+  divider: {
+    height: 1,
+    backgroundColor: "#CCC",
+    marginVertical: 10,
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: "80%",
+    backgroundColor: "white",
     padding: 20,
-    backgroundColor: "#FFF",
     borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
-    elevation: 5,
+    width: "80%",
+    alignItems: "center",
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
-    textAlign: "center",
   },
   input: {
     borderWidth: 1,
     borderColor: "#CCC",
     borderRadius: 5,
     padding: 10,
+    width: "100%",
     marginBottom: 10,
   },
   modalButtons: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
+    width: "100%",
   },
   button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    padding: 10,
     borderRadius: 5,
+    width: "48%",
+    alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: "#CCC",
+    backgroundColor: "#999",
   },
   saveButton: {
     backgroundColor: "#6699CC",
@@ -357,7 +453,7 @@ const styles = StyleSheet.create({
     backgroundColor: "red",
   },
   buttonText: {
-    color: "#FFF",
+    color: "white",
     fontWeight: "bold",
   },
 });
