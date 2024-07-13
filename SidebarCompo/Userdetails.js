@@ -17,87 +17,21 @@ export default function Userdetails() {
   const [addUserModalVisible, setAddUserModalVisible] = useState(false);
   const [userDetails, setUserDetails] = useState({
     name: "",
-    ph_no: "",
-    emailId: "",
-    age: "",
-    maintaince: "",
-    final_rent: "",
-    deposit: "",
-    current_meter_reading: "",
-    rent_form_date: new Date(),
-    permanant_address: "",
-    previous_address: "",
-    nature_of_work: "",
-    working_address: "",
-    work_ph_no: "",
-    family_members: "",
-    male_members: "",
-    female_members: "",
-    childs: "",
-    family_member_names: "",
-    reference_person1: "",
-    reference_person2: "",
-    reference_person1_age: "",
-    reference_person2_age: "",
-    agent_name: "",
-    adharPhotoUri: "",
-    rent_status: "Active",
-    flat_no: "",
-    building_name: "",
-    area: "",
-    room_type: "",
-    wing: "",
-    adhar_no: "",
+    tenantPhotoUri: "",
   });
-  const [userList, setUserList] = useState([
-    {
-      name: "Rashmi Kulkarni",
-      status: "Active",
-      date: new Date().toLocaleDateString(),
-    },
-  ]);
+  const [userList, setUserList] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleAddUser = () => {
     setUserDetails({
       name: "",
-      ph_no: "",
-      emailId: "",
-      age: "",
-      maintaince: "",
-      final_rent: "",
-      deposit: "",
-      current_meter_reading: "",
-      rent_form_date: new Date(),
-      permanant_address: "",
-      previous_address: "",
-      nature_of_work: "",
-      working_address: "",
-      work_ph_no: "",
-      family_members: "",
-      male_members: "",
-      female_members: "",
-      childs: "",
-      family_member_names: "",
-      reference_person1: "",
-      reference_person2: "",
-      reference_person1_age: "",
-      reference_person2_age: "",
-      agent_name: "",
-      flat_id: "",
-      rent_status: "Active",
-      flat_no: "",
-      building_name: "",
-      area: "",
-      room_type: "",
-      wing: "",
-      adhar_no: "",
+      tenantPhotoUri: "",
     });
     setAddUserModalVisible(true);
   };
 
-  const handleConfirmAddUser = () => {
+  const handleConfirmAddUser = async () => {
     const updatedUserList = userList.map((user) => {
       if (user.status === "Active") {
         return { ...user, status: "Deactive" };
@@ -109,44 +43,47 @@ export default function Userdetails() {
       {
         name: userDetails.name,
         status: "Active",
-        date: userDetails.rent_form_date.toLocaleDateString(),
+        date: new Date().toLocaleDateString(), // Ensure rent_form_date is set appropriately
       },
       ...updatedUserList,
     ]);
 
+    // Upload tenant details and photo to the backend
+    const formData = new FormData();
+    formData.append("name", userDetails.name);
+    if (userDetails.tenantPhotoUri) {
+      const tenantPhoto = {
+        uri: userDetails.tenantPhotoUri,
+        name: userDetails.tenantPhotoUri.split("/").pop(),
+        type: "image/jpeg",
+      };
+      formData.append("tenantPhoto", tenantPhoto);
+    }
+
+    try {
+      const response = await fetch(
+        "https://stock-management-system-server-6mja.onrender.com/api/tenants/add-tenant-by-flat/:id", // Replace :id with the actual flat ID
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          body: formData,
+        }
+      );
+      const result = await response.json();
+      if (response.ok) {
+        console.log("Tenant added successfully:", result);
+      } else {
+        console.error("Failed to add tenant:", result);
+      }
+    } catch (error) {
+      console.error("Error adding tenant:", error);
+    }
+
     setUserDetails({
       name: "",
-      ph_no: "",
-      emailId: "",
-      age: "",
-      maintaince: "",
-      final_rent: "",
-      deposit: "",
-      current_meter_reading: "",
-      rent_form_date: new Date(),
-      permanant_address: "",
-      previous_address: "",
-      nature_of_work: "",
-      working_address: "",
-      work_ph_no: "",
-      family_members: "",
-      male_members: "",
-      female_members: "",
-      childs: "",
-      family_member_names: "",
-      reference_person1: "",
-      reference_person2: "",
-      reference_person1_age: "",
-      reference_person2_age: "",
-      agent_name: "",
-      flat_id: "",
-      rent_status: "Active",
-      flat_no: "",
-      building_name: "",
-      area: "",
-      room_type: "",
-      wing: "",
-      adhar_no: "",
+      tenantPhotoUri: "",
     });
     setAddUserModalVisible(false);
   };
@@ -324,441 +261,6 @@ export default function Userdetails() {
                 />
               </View>
               <View style={styles.formRow}>
-                <Text style={styles.label}>Phone Number:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter phone number"
-                  value={userDetails.ph_no}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      ph_no: text,
-                    }))
-                  }
-                  keyboardType="phone-pad"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Email:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter email"
-                  value={userDetails.emailId}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      emailId: text,
-                    }))
-                  }
-                  keyboardType="email-address"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Age:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter age"
-                  value={userDetails.age}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({ ...prevState, age: text }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Aadhar Number:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter Aadhar Number"
-                  value={userDetails.adhar_no}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      adhar_no: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Flat No:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter Flat Number"
-                  value={userDetails.flat_no}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      flat_no: text,
-                    }))
-                  }
-                />
-              </View>
-
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Building Name:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter Building Name"
-                  value={userDetails.building_name}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      building_name: text,
-                    }))
-                  }
-                />
-              </View>
-
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Area:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter Area"
-                  value={userDetails.area}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      area: text,
-                    }))
-                  }
-                />
-              </View>
-
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Room Type:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter Room Type"
-                  value={userDetails.room_type}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      room_type: text,
-                    }))
-                  }
-                />
-              </View>
-
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Wing:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter Wing"
-                  value={userDetails.wing}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      wing: text,
-                    }))
-                  }
-                />
-              </View>
-
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Maintenance:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter maintenance amount"
-                  value={userDetails.maintaince}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      maintaince: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Final Rent:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter final rent amount"
-                  value={userDetails.final_rent}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      final_rent: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Deposit:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter deposit amount"
-                  value={userDetails.deposit}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      deposit: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Current Meter Reading:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter current meter reading"
-                  value={userDetails.current_meter_reading}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      current_meter_reading: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Rent From Date:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter rent from date"
-                  value={userDetails.rent_form_date.toLocaleDateString()}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      rent_form_date: new Date(text),
-                    }))
-                  }
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Permanent Address:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter permanent address"
-                  value={userDetails.permanant_address}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      permanant_address: text,
-                    }))
-                  }
-                  multiline={true}
-                  numberOfLines={3}
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Previous Address:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter previous address"
-                  value={userDetails.previous_address}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      previous_address: text,
-                    }))
-                  }
-                  multiline={true}
-                  numberOfLines={3}
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Nature of Work:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter nature of work"
-                  value={userDetails.nature_of_work}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      nature_of_work: text,
-                    }))
-                  }
-                  multiline={true}
-                  numberOfLines={3}
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Working Address:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter working address"
-                  value={userDetails.working_address}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      working_address: text,
-                    }))
-                  }
-                  multiline={true}
-                  numberOfLines={3}
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Work Phone Number:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter work phone number"
-                  value={userDetails.work_ph_no}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      work_ph_no: text,
-                    }))
-                  }
-                  keyboardType="phone-pad"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Family Members:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter total family members"
-                  value={userDetails.family_members}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      family_members: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Male Members:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter male members"
-                  value={userDetails.male_members}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      male_members: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Female Members:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter female members"
-                  value={userDetails.female_members}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      female_members: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Children:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter number of children"
-                  value={userDetails.childs}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      childs: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Family Member Names:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter family member names"
-                  value={userDetails.family_member_names}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      family_member_names: text,
-                    }))
-                  }
-                  multiline={true}
-                  numberOfLines={3}
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Reference Person 1:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter reference person 1"
-                  value={userDetails.reference_person1}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      reference_person1: text,
-                    }))
-                  }
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Reference Person 1 Age:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter reference person 1 age"
-                  value={userDetails.reference_person1_age}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      reference_person1_age: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Reference Person 2:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter reference person 2"
-                  value={userDetails.reference_person2}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      reference_person2: text,
-                    }))
-                  }
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Reference Person 2 Age:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter reference person 2 age"
-                  value={userDetails.reference_person2_age}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      reference_person2_age: text,
-                    }))
-                  }
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.formRow}>
-                <Text style={styles.label}>Agent Name:</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter agent name"
-                  value={userDetails.agent_name}
-                  onChangeText={(text) =>
-                    setUserDetails((prevState) => ({
-                      ...prevState,
-                      agent_name: text,
-                    }))
-                  }
-                />
-              </View>
-              <View style={styles.formRow}>
                 <Text style={styles.label}>Tenant Passport Photo:</Text>
                 <TouchableOpacity style={styles.uploadButton}>
                   <Button
@@ -786,7 +288,6 @@ export default function Userdetails() {
                   </Text>
                 ) : null}
               </View>
-
               <View style={styles.formRow}>
                 <Text style={styles.label}>Aadhar Card Back Photo:</Text>
                 <TouchableOpacity style={styles.uploadButton}>
@@ -801,9 +302,8 @@ export default function Userdetails() {
                   </Text>
                 ) : null}
               </View>
-
               <View style={styles.formRow}>
-                <Text style={styles.label}>Light Bill:</Text>
+                <Text style={styles.label}>Light Bill Photo:</Text>
                 <TouchableOpacity style={styles.uploadButton}>
                   <Button
                     title="Choose Photo"
@@ -816,20 +316,19 @@ export default function Userdetails() {
                   </Text>
                 ) : null}
               </View>
-
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={handleConfirmAddUser}
-              >
-                <Text style={styles.submitButtonText}>ADD</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setAddUserModalVisible(false)}
-              >
-                <Text style={styles.closeButtonText}>CLOSE</Text>
-              </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleConfirmAddUser}
+            >
+              <Text style={styles.saveButtonText}>Save</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setAddUserModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
           </ScrollView>
         </View>
       </Modal>
@@ -844,185 +343,163 @@ export default function Userdetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  modalContainer: {
-    flex: 1,
+    backgroundColor: "#ffffff",
+    padding: 16,
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "white",
-    borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  userDetailContainer: {
-    width: "100%",
-  },
-  userDetailRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  boldText: {
-    fontWeight: "bold",
-  },
-  userDetailText: {
-    flex: 1,
-    textAlign: "right",
-  },
-  closeButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "red",
-    borderRadius: 5,
-  },
-  closeButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  submitButton: {
-    backgroundColor: "#27ae60",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    flex: 1,
-    marginRight: 10,
-  },
-  submitButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
   },
   headerText: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
-  },
-  tableRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  tableCell: {
-    fontSize: 16,
-    flex: 1,
-  },
-  activeStatus: {
-    backgroundColor: "#d4edda", // Light green background color
-    color: "#155724", // Dark green text color
-    fontWeight: "bold",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5,
-    textAlign: "center",
-  },
-  inactiveStatus: {
-    backgroundColor: "#f8d7da", // Light red background color
-    color: "#721c24", // Dark red text color
-    fontWeight: "bold",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-    textAlign: "center",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-    color: "#333", // Example color
+    marginBottom: 16,
+    color: "#333333",
   },
   searchContainer: {
-    flexDirection: "row",
+    width: "100%",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  searchInput: {
+    width: "80%",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#cccccc",
+    borderRadius: 8,
   },
   tableHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#f0f0f0",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 5,
+    backgroundColor: "#f2f2f2",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
   },
   tableHeaderText: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  searchInput: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    paddingHorizontal: 10,
+    fontWeight: "bold",
+    color: "#333333",
+  },
+  scrollView: {
+    width: "100%",
+  },
+  tableRow: {
+    flexDirection: "row",
+    backgroundColor: "#ffffff",
     paddingVertical: 8,
-    marginRight: 10,
-    borderRadius: 5,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1,
+    elevation: 2,
+    width: "100%",
   },
-  addButton: {
-    backgroundColor: "#FFBF00",
-    padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 10,
+  tableCell: {
+    flex: 1,
+    color: "#333333",
   },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 18,
+  activeStatus: {
+    color: "green",
+    fontWeight: "bold",
   },
-  cancelButton: {
-    backgroundColor: "#e74c3c",
-    padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  cancelButtonText: {
-    color: "#fff",
-    fontSize: 18,
+  inactiveStatus: {
+    color: "red",
+    fontWeight: "bold",
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    paddingHorizontal: 20,
   },
   modalContent: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
-    paddingVertical: 30,
+    backgroundColor: "#ffffff",
+    padding: 20,
     borderRadius: 10,
+    width: "90%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: "#333333",
+  },
+  userDetailContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  userDetailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  boldText: {
+    fontWeight: "bold",
+    color: "#333333",
+  },
+  userDetailText: {
+    color: "#333333",
+  },
+  closeButton: {
+    marginTop: 16,
+    backgroundColor: "#333333",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  addButton: {
+    marginTop: 16,
+    backgroundColor: "#333333",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+  },
+  formContainer: {
+    width: "100%",
   },
   formRow: {
-    marginBottom: 15,
+    marginBottom: 16,
   },
   label: {
     fontSize: 16,
-    marginBottom: 5,
+    fontWeight: "bold",
+    color: "#333333",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#cccccc",
+    borderRadius: 8,
     padding: 10,
-    borderRadius: 5,
-    fontSize: 16,
+    marginTop: 8,
+  },
+  uploadButton: {
+    marginTop: 8,
+    alignSelf: "flex-start",
+  },
+  fileName: {
+    marginTop: 8,
+    color: "#333333",
+  },
+  saveButton: {
+    backgroundColor: "#333333",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  saveButtonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
   },
 });

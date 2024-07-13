@@ -242,7 +242,6 @@ const ManageTenants = ({ navigation }) => {
                 )}
               </Text>
             </View>
-           
           </View>
         ))}
       </ScrollView>
@@ -294,7 +293,7 @@ const ManageTenants = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/* Delete Tenant Confirmation Modal */}
+      {/* Delete Tenant Modal */}
       <Modal
         visible={deleteModalVisible}
         transparent={true}
@@ -303,11 +302,8 @@ const ManageTenants = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirm Delete</Text>
-            <Text>
-              Are you sure you want to delete{" "}
-              {selectedTenant?.name ? selectedTenant.name : "this tenant"}?
-            </Text>
+            <Text style={styles.modalTitle}>Delete Tenant</Text>
+            <Text>Are you sure you want to delete this tenant?</Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.button, styles.cancelButton]}
@@ -318,7 +314,7 @@ const ManageTenants = ({ navigation }) => {
               <TouchableOpacity
                 style={[styles.button, styles.deleteButton]}
                 onPress={() => {
-                  // Delete logic here
+                  // Delete tenant logic here
                   setDeleteModalVisible(false);
                 }}
               >
@@ -335,31 +331,25 @@ const ManageTenants = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9F9F9",
-    padding: 10,
+    padding: 16,
+    backgroundColor: "#fff",
   },
   headerText: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 16,
   },
   errorText: {
     color: "red",
-    marginBottom: 10,
-  },
-  scrollView: {
-    paddingBottom: 20,
+    marginBottom: 16,
   },
   societyContainer: {
     marginBottom: 20,
-    borderRadius:10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
-    elevation: 5,
   },
   societyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 5,
@@ -367,70 +357,78 @@ const styles = StyleSheet.create({
   societyName: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "white",
   },
   flatListingContainer: {
-    marginTop: 10,
+    marginVertical: 10,
   },
   flatsContainer: {
-    marginTop: 10,
+    marginVertical: 5,
   },
   flatContainer: {
-    marginBottom: 10,
+    marginBottom: 5,
+    padding: 10,
+    backgroundColor: "#ffffff",
+    borderRadius: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 5,
   },
   flatName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
   tenantListingContainer: {
-    marginTop: 5,
-    
-  },
-  noFlatsText: {
-    fontStyle: "italic",
-    color: "#999",
-  },
-  flatIcons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: 70,
-    marginRight: 5,
+    marginVertical: 10,
   },
   image: {
     width: 50,
     height: 70,
     marginRight: 10,
   },
+  flatIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
   divider: {
     height: 1,
-    backgroundColor: "#CCC",
+    backgroundColor: "#ccc",
     marginVertical: 10,
+  },
+  noFlatsText: {
+    color: "#888",
+    fontStyle: "italic",
+  },
+  scrollView: {
+    paddingBottom: 20,
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: "white",
+    width: "80%",
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    width: "80%",
     alignItems: "center",
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#CCC",
-    borderRadius: 5,
-    padding: 10,
     width: "100%",
-    marginBottom: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 20,
   },
   modalButtons: {
     flexDirection: "row",
@@ -438,13 +436,14 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   button: {
+    flex: 1,
     padding: 10,
     borderRadius: 5,
-    width: "48%",
     alignItems: "center",
+    marginHorizontal: 5,
   },
   cancelButton: {
-    backgroundColor: "#999",
+    backgroundColor: "#ccc",
   },
   saveButton: {
     backgroundColor: "#6699CC",
@@ -453,7 +452,7 @@ const styles = StyleSheet.create({
     backgroundColor: "red",
   },
   buttonText: {
-    color: "white",
+    color: "#fff",
     fontWeight: "bold",
   },
 });
