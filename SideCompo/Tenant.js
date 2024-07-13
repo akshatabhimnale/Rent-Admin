@@ -1,9 +1,18 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
-import React, { useEffect, useState } from 'react';
-import { Button, FlatList, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { MaterialIcons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  FlatList,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const Tenant = () => {
   const [tenants, setTenants] = useState([]);
@@ -124,11 +133,7 @@ const Tenant = () => {
             </tr>
             <tr>
               <td>Family Members</td>
-                            <td>${
-                              tenant.family_members
-                                ? tenant.family_members.join(", ")
-                                : "N/A"
-                            }</td>
+                            <td>${tenant.family_members}</td>
             </tr>
             <tr>
               <td>Reference Persons</td>
@@ -145,6 +150,61 @@ const Tenant = () => {
             <tr>
               <td>Rent Status</td>
               <td>${tenant.rent_status}</td>
+            </tr>
+            <tr>
+              <td>Tanant Photo</td>
+              <td>
+              
+              <img src="https://stock-management-system-server-6mja.onrender.com/${tenant.tenant_photo.replace(
+                /\\/g,
+                "/"
+              )}"></img>
+              
+              </td>
+            </tr>
+            <tr>
+              <td>Adhar Front</td>
+              <td>
+              
+              <img src="https://stock-management-system-server-6mja.onrender.com/${tenant.adhar_front.replace(
+                /\\/g,
+                "/"
+              )}"></img>
+              
+              </td>
+            </tr>
+            <tr>
+              <td>Adhar Back</td>
+              <td>
+              
+              <img src="https://stock-management-system-server-6mja.onrender.com/${tenant.adhar_back.replace(
+                /\\/g,
+                "/"
+              )}"></img>
+              
+              </td>
+            </tr>
+            <tr>
+              <td>Pan Photo</td>
+              <td>
+              
+              <img src="https://stock-management-system-server-6mja.onrender.com/${tenant.pan_photo.replace(
+                /\\/g,
+                "/"
+              )}"></img>
+              
+              </td>
+            </tr>
+            <tr>
+              <td>Electricity Bill</td>
+              <td>
+              
+              <img src="https://stock-management-system-server-6mja.onrender.com/${tenant.electricity_bill.replace(
+                /\\/g,
+                "/"
+              )}"></img>
+              
+              </td>
             </tr>
           </table>
         </body>
