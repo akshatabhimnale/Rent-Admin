@@ -17,7 +17,9 @@ export default function Userdetails() {
   const [addUserModalVisible, setAddUserModalVisible] = useState(false);
   const [userDetails, setUserDetails] = useState({
     name: "",
-    tenantPhotoUri: "",
+    adharPhotoUri: null,
+    tenantPhotoUri: null,
+    lightBillPhotoUri: null,
   });
   const [userList, setUserList] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -32,37 +34,40 @@ export default function Userdetails() {
   };
 
   const handleConfirmAddUser = async () => {
-    const updatedUserList = userList.map((user) => {
-      if (user.status === "Active") {
-        return { ...user, status: "Deactive" };
-      }
-      return user;
-    });
+    // const updatedUserList = userList.map((user) => {
+    //   if (user.status === "Active") {
+    //     return { ...user, status: "Deactive" };
+    //   }
+    //   return user;
+    // });
 
-    setUserList([
-      {
-        name: userDetails.name,
-        status: "Active",
-        date: new Date().toLocaleDateString(), // Ensure rent_form_date is set appropriately
-      },
-      ...updatedUserList,
-    ]);
+    // setUserList([
+    //   {
+    //     name: userDetails.name,
+    //     status: "Active",
+    //     date: new Date().toLocaleDateString(), // Ensure rent_form_date is set appropriately
+    //   },
+    //   ...updatedUserList,
+    // ]);
 
     // Upload tenant details and photo to the backend
-    const formData = new FormData();
-    formData.append("name", userDetails.name);
-    if (userDetails.tenantPhotoUri) {
-      const tenantPhoto = {
-        uri: userDetails.tenantPhotoUri,
-        name: userDetails.tenantPhotoUri.split("/").pop(),
-        type: "image/jpeg",
-      };
-      formData.append("tenantPhoto", tenantPhoto);
-    }
 
     try {
+      const formData = new FormData();
+      console.log(userDetails);
+      return;
+      formData.append("name", userDetails.name);
+      formData.append("rent_status", "paid");
+      files.forEach((file) => {
+        formData.append(file.name, {
+          uri: file.uri,
+          type: file.type,
+          name: file.name,
+        });
+      });
+      console.log(formData);
       const response = await fetch(
-        "https://stock-management-system-server-6mja.onrender.com/api/tenants/add-tenant-by-flat/:id", // Replace :id with the actual flat ID
+        `https://stock-management-system-server-6mja.onrender.com/api/tenants/add-tenant-by-flat/asd`,
         {
           method: "POST",
           headers: {
@@ -71,20 +76,23 @@ export default function Userdetails() {
           body: formData,
         }
       );
-      const result = await response.json();
-      if (response.ok) {
-        console.log("Tenant added successfully:", result);
-      } else {
-        console.error("Failed to add tenant:", result);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log("Upload successful:", data);
+      // Handle success as needed (e.g., navigate to next screen)
     } catch (error) {
-      console.error("Error adding tenant:", error);
+      console.error("Error uploading files:", error);
+      Alert.alert("Error", "Failed to upload files. Please try again.");
     }
 
-    setUserDetails({
-      name: "",
-      tenantPhotoUri: "",
-    });
+    // setUserDetails({
+    //   name: "",
+    //   tenantPhotoUri: "",
+    // });
     setAddUserModalVisible(false);
   };
 
@@ -261,7 +269,7 @@ export default function Userdetails() {
                 />
               </View>
               <View style={styles.formRow}>
-                <Text style={styles.label}>Tenant Passport Photo:</Text>
+                <Text style={styles.label}>Tenant Photo:</Text>
                 <TouchableOpacity style={styles.uploadButton}>
                   <Button
                     title="Choose Photo"
@@ -275,7 +283,7 @@ export default function Userdetails() {
                 ) : null}
               </View>
               <View style={styles.formRow}>
-                <Text style={styles.label}>Aadhar Card Front Photo:</Text>
+                <Text style={styles.label}>ID Proof Front Photo:</Text>
                 <TouchableOpacity style={styles.uploadButton}>
                   <Button
                     title="Choose Photo"
@@ -289,7 +297,7 @@ export default function Userdetails() {
                 ) : null}
               </View>
               <View style={styles.formRow}>
-                <Text style={styles.label}>Aadhar Card Back Photo:</Text>
+                <Text style={styles.label}>ID Proof Back Photo:</Text>
                 <TouchableOpacity style={styles.uploadButton}>
                   <Button
                     title="Choose Photo"
@@ -303,7 +311,7 @@ export default function Userdetails() {
                 ) : null}
               </View>
               <View style={styles.formRow}>
-                <Text style={styles.label}>Light Bill Photo:</Text>
+                <Text style={styles.label}>Past Light Bill Photo:</Text>
                 <TouchableOpacity style={styles.uploadButton}>
                   <Button
                     title="Choose Photo"
