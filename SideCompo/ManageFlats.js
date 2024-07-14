@@ -26,6 +26,7 @@ const ManageFlats = ({ navigation }) => {
   const [loadingWings, setLoadingWings] = useState(false);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [flatName, setFlatName] = useState("");
+  const [flatType, setFlatType] = useState("");
 
   useEffect(() => {
     fetchSocieties();
@@ -103,209 +104,205 @@ const ManageFlats = ({ navigation }) => {
 
   const addFlat = (wingId) => {
     setSelectedWing(wingId); // Store selected wing ID
-    setFlatName(""); // Reset flat name
+    setFlatName("");
+    setFlatType("");
     setAddModalVisible(true); // Open the add flat modal
   };
 
-const saveFlat = () => {
-  if (!selectedWing || !flatName) {
-    console.error("Invalid wing ID or flat name");
-    return;
-  }
-
-  fetch(
-    `https://stock-management-system-server-6mja.onrender.com/api/flats/add-flats-by-wing/${selectedWing}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name: flatName, wingId: selectedWing }),
+  const saveFlat = () => {
+    if (!selectedWing || !flatName) {
+      console.error("Invalid wing ID or flat name");
+      return;
     }
-  )
-    .then(async (response) => {
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("Failed to add flat:", errorBody);
-        throw new Error("Failed to add flat");
+
+    fetch(
+      `https://stock-management-system-server-6mja.onrender.com/api/flats/add-flats-by-wing/${selectedWing}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: flatName,
+          flat_type: flatType,
+          wingId: selectedWing,
+        }),
       }
-      return response.json();
-    })
-    .then((newFlat) => {
-      // Ensure you update the state correctly
-      setWingsBySociety((prev) => {
-        const wingKey = Object.keys(prev).find((key) =>
-          prev[key].some((wing) => wing._id === selectedWing)
-        );
-
-        if (!wingKey) {
-          console.error("Wing not found");
-          return prev; // No change if wing is not found
+    )
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorBody = await response.text();
+          console.error("Failed to add flat:", errorBody);
+          throw new Error("Failed to add flat");
         }
+        return response.json();
+      })
+      .then((newFlat) => {
+        // Ensure you update the state correctly
+        setWingsBySociety((prev) => {
+          const wingKey = Object.keys(prev).find((key) =>
+            prev[key].some((wing) => wing._id === selectedWing)
+          );
 
-        const updatedWings = prev[wingKey].map((wing) => {
-          if (wing._id === selectedWing) {
-            return {
-              ...wing,
-              flats: [...wing.flats, newFlat], // Add the new flat to the existing flats
-            };
+          if (!wingKey) {
+            console.error("Wing not found");
+            return prev; // No change if wing is not found
           }
-          return wing;
+
+          const updatedWings = prev[wingKey].map((wing) => {
+            if (wing._id === selectedWing) {
+              return {
+                ...wing,
+                flats: [...wing.flats, newFlat], // Add the new flat to the existing flats
+              };
+            }
+            return wing;
+          });
+
+          return {
+            ...prev,
+            [wingKey]: updatedWings,
+          };
         });
 
-        return {
-          ...prev,
-          [wingKey]: updatedWings,
-        };
+        setAddModalVisible(false);
+        setFlatName("");
+        setFlatType("");
+      })
+      .catch((error) => {
+        console.error("Error adding flat:", error);
       });
+  };
 
-      setAddModalVisible(false);
-      setFlatName("");
-    })
-    .catch((error) => {
-      console.error("Error adding flat:", error);
-    });
-};
+  const editFlat = (flatId, wingId) => {
+    const wing = Object.values(wingsBySociety)
+      .flat()
+      .find((wing) => wing._id === wingId);
 
+    if (wing) {
+      const flatToEdit = wing.flats.find((flat) => flat._id === flatId);
 
-
-
-const editFlat = (flatId, wingId) => {
-  const wing = Object.values(wingsBySociety)
-    .flat()
-    .find((wing) => wing._id === wingId);
-
-  if (wing) {
-    const flatToEdit = wing.flats.find((flat) => flat._id === flatId);
-
-    if (flatToEdit) {
-      setSelectedFlat({ flatId, wingId });
-      setFlatName(flatToEdit.name);
-      setEditModalVisible(true);
+      if (flatToEdit) {
+        setSelectedFlat({ flatId, wingId });
+        setFlatName(flatToEdit.name);
+        setFlatType(flatToEdit.flat_type);
+        setEditModalVisible(true);
+      } else {
+        console.error("Flat not found");
+      }
     } else {
-      console.error("Flat not found");
+      console.error("Wing not found");
     }
-  } else {
-    console.error("Wing not found");
-  }
-};
+  };
 
-
-
-
-const updateFlat = () => {
-  if (!selectedFlat || !selectedFlat.flatId || !selectedFlat.wingId) {
-    console.error("Invalid selected flat or wing ID");
-    return;
-  }
-
-  fetch(
-    `https://stock-management-system-server-6mja.onrender.com/api/flats/${selectedFlat.flatId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name: flatName }),
+  const updateFlat = () => {
+    if (!selectedFlat || !selectedFlat.flatId || !selectedFlat.wingId) {
+      console.error("Invalid selected flat or wing ID");
+      return;
     }
-  )
-    .then((response) => {
-      if (!response.ok) throw new Error("Failed to update flat");
-      return response.json();
-    })
-    .then((updatedFlat) => {
-      setWingsBySociety((prev) => {
-        // Find the wing where the flat is located
-        const wingKey = Object.keys(prev).find((key) =>
-          prev[key].some((wing) =>
-            wing.flats.some((flat) => flat._id === selectedFlat.flatId)
-          )
-        );
 
-        if (!wingKey) {
-          console.error("Wing not found");
-          return prev; // No change if wing is not found
-        }
+    fetch(
+      `https://stock-management-system-server-6mja.onrender.com/api/flats/${selectedFlat.flatId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: flatName, flat_type: flatType }),
+      }
+    )
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to update flat");
+        return response.json();
+      })
+      .then((updatedFlat) => {
+        setWingsBySociety((prev) => {
+          // Find the wing where the flat is located
+          const wingKey = Object.keys(prev).find((key) =>
+            prev[key].some((wing) =>
+              wing.flats.some((flat) => flat._id === selectedFlat.flatId)
+            )
+          );
 
-        // Update the flats in the found wing
-        return {
-          ...prev,
-          [wingKey]: prev[wingKey].map((wing) => ({
-            ...wing,
-            flats: wing.flats.map((flat) =>
-              flat._id === selectedFlat.flatId ? updatedFlat : flat
-            ),
-          })),
-        };
+          if (!wingKey) {
+            console.error("Wing not found");
+            return prev; // No change if wing is not found
+          }
+
+          // Update the flats in the found wing
+          return {
+            ...prev,
+            [wingKey]: prev[wingKey].map((wing) => ({
+              ...wing,
+              flats: wing.flats.map((flat) =>
+                flat._id === selectedFlat.flatId ? updatedFlat : flat
+              ),
+            })),
+          };
+        });
+
+        setEditModalVisible(false);
+        setFlatName("");
+        setFlatType("");
+        setSelectedFlat(null);
+      })
+      .catch((error) => {
+        console.error("Error updating flat:", error);
       });
-
-      setEditModalVisible(false);
-      setFlatName("");
-      setSelectedFlat(null);
-    })
-    .catch((error) => {
-      console.error("Error updating flat:", error);
-    });
-};
-
+  };
 
   const deleteFlat = (flatId, wingId) => {
     setSelectedFlat({ flatId, wingId });
     setDeleteModalVisible(true);
   };
 
-const confirmDeleteFlat = () => {
-  if (!selectedFlat || !selectedFlat.flatId || !selectedFlat.wingId) {
-    console.error("Invalid selected flat or wing ID");
-    return;
-  }
-
-  const societyId = Object.keys(wingsBySociety).find((key) =>
-    wingsBySociety[key].some((wing) => wing._id === selectedFlat.wingId)
-  );
-
-  const wing = wingsBySociety[societyId]?.find(
-    (wing) => wing._id === selectedFlat.wingId
-  );
-  if (!wing) {
-    console.error("Wing not found");
-    return;
-  }
-
-  fetch(
-    `https://stock-management-system-server-6mja.onrender.com/api/flats/${selectedFlat.flatId}`,
-    {
-      method: "DELETE",
+  const confirmDeleteFlat = () => {
+    if (!selectedFlat || !selectedFlat.flatId || !selectedFlat.wingId) {
+      console.error("Invalid selected flat or wing ID");
+      return;
     }
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to delete flat");
+
+    const societyId = Object.keys(wingsBySociety).find((key) =>
+      wingsBySociety[key].some((wing) => wing._id === selectedFlat.wingId)
+    );
+
+    const wing = wingsBySociety[societyId]?.find(
+      (wing) => wing._id === selectedFlat.wingId
+    );
+    if (!wing) {
+      console.error("Wing not found");
+      return;
+    }
+
+    fetch(
+      `https://stock-management-system-server-6mja.onrender.com/api/flats/${selectedFlat.flatId}`,
+      {
+        method: "DELETE",
       }
-      return response.json();
-    })
-    .then(() => {
-      const updatedFlats = wing.flats.filter(
-        (flat) => flat._id !== selectedFlat.flatId
-      );
-      setWingsBySociety((prev) => ({
-        ...prev,
-        [societyId]: prev[societyId].map((w) =>
-          w._id === selectedFlat.wingId ? { ...w, flats: updatedFlats } : w
-        ),
-      }));
-      setDeleteModalVisible(false);
-      setSelectedFlat(null);
-    })
-    .catch((error) => {
-      console.error("Error deleting flat:", error);
-    });
-};
-
-
-
-
-
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to delete flat");
+        }
+        return response.json();
+      })
+      .then(() => {
+        const updatedFlats = wing.flats.filter(
+          (flat) => flat._id !== selectedFlat.flatId
+        );
+        setWingsBySociety((prev) => ({
+          ...prev,
+          [societyId]: prev[societyId].map((w) =>
+            w._id === selectedFlat.wingId ? { ...w, flats: updatedFlats } : w
+          ),
+        }));
+        setDeleteModalVisible(false);
+        setSelectedFlat(null);
+      })
+      .catch((error) => {
+        console.error("Error deleting flat:", error);
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -317,6 +314,12 @@ const confirmDeleteFlat = () => {
               style={styles.input}
               value={flatName}
               onChangeText={setFlatName}
+              placeholder="Enter Flat Name"
+            />
+            <TextInput
+              style={styles.input}
+              value={flatType}
+              onChangeText={setFlatType}
               placeholder="Enter Flat Name"
             />
             <View style={styles.modalButtons}>
@@ -389,6 +392,9 @@ const confirmDeleteFlat = () => {
                               style={styles.flatImage}
                             />
                             <Text style={styles.flatName}>{flat.name}</Text>
+                            <Text style={styles.flatName}>
+                              {flat.flat_type}
+                            </Text>
                             <View style={styles.flatIcons}>
                               <TouchableOpacity
                                 onPress={() => editFlat(flat._id, wing._id)}
@@ -432,6 +438,12 @@ const confirmDeleteFlat = () => {
               value={flatName}
               onChangeText={setFlatName}
               placeholder="Enter Flat Name"
+            />
+            <TextInput
+              style={styles.input}
+              value={flatType}
+              onChangeText={setFlatType}
+              placeholder="Enter Flat Type"
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
