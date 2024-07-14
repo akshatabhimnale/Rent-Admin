@@ -241,7 +241,6 @@ const HomeScreen = () => {
       )}
 
       <Animated.View style={[styles.sidebar, { left: sidebarAnim }]}>
- 
         <View
           style={{
             alignItems: "center",
@@ -283,6 +282,15 @@ const HomeScreen = () => {
           <Text style={styles.sidebarText}>Manage Flats</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          onPress={() => handleSidebarItemPress("ManageTenants")}
+          style={[
+            styles.sidebarItem,
+            activeNavItem === "ManageTenants" && styles.activeSidebarItem,
+          ]}
+        >
+          <Text style={styles.sidebarText}>Manage Tenants</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
           onPress={() => handleSidebarItemPress("Tenant")}
           style={[
             styles.sidebarItem,
@@ -309,23 +317,15 @@ const HomeScreen = () => {
         >
           <Text style={styles.sidebarText}>Report</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          onPress={() => handleSidebarItemPress("ManageTenants")}
+          onPress={() => handleSidebarItemPress("RentStatus")}
           style={[
             styles.sidebarItem,
-            activeNavItem === "ManageTenants" && styles.activeSidebarItem,
+            activeNavItem === "RentStatus" && styles.activeSidebarItem,
           ]}
         >
-          <Text style={styles.sidebarText}>Manage Tenants</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => handleSidebarItemPress("PageF")}
-          style={[
-            styles.sidebarItem,
-            activeNavItem === "PageF" && styles.activeSidebarItem,
-          ]}
-        >
-          <Text style={styles.sidebarText}>Page F</Text>
+          <Text style={styles.sidebarText}>Rent Status</Text>
         </TouchableOpacity>
       </Animated.View>
 

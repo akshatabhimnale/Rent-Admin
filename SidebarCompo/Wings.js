@@ -13,6 +13,7 @@ import {
 
 const Wings = ({ route, navigation }) => {
   const { societyId } = route.params;
+  console.log(societyId);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [wingName, setWingName] = useState("");

@@ -11,7 +11,8 @@ import {
   View,
 } from "react-native";
 
-export default function Userdetails() {
+export default function Userdetails({ route }) {
+  const { flat } = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   const [aadharBackPhotoUri, setAadharBackPhotoUri] = useState("");
   const [addUserModalVisible, setAddUserModalVisible] = useState(false);
@@ -54,20 +55,19 @@ export default function Userdetails() {
 
     try {
       const formData = new FormData();
-      console.log(userDetails);
-      return;
+
       formData.append("name", userDetails.name);
       formData.append("rent_status", "paid");
-      files.forEach((file) => {
-        formData.append(file.name, {
-          uri: file.uri,
-          type: file.type,
-          name: file.name,
-        });
-      });
+      // files.forEach((file) => {
+      //   formData.append(file.name, {
+      //     uri: file.uri,
+      //     type: file.type,
+      //     name: file.name,
+      //   });
+      // });
       console.log(formData);
       const response = await fetch(
-        `https://stock-management-system-server-6mja.onrender.com/api/tenants/add-tenant-by-flat/asd`,
+        `https://stock-management-system-server-6mja.onrender.com/api/tenants/add-tenant-by-flat/${flat._id}`,
         {
           method: "POST",
           headers: {
@@ -79,6 +79,8 @@ export default function Userdetails() {
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
+      } else {
+        console.log(error);
       }
 
       const data = await response.json();
@@ -86,7 +88,6 @@ export default function Userdetails() {
       // Handle success as needed (e.g., navigate to next screen)
     } catch (error) {
       console.error("Error uploading files:", error);
-      Alert.alert("Error", "Failed to upload files. Please try again.");
     }
 
     // setUserDetails({
