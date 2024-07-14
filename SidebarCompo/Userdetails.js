@@ -396,7 +396,19 @@ export default function Userdetails({ route }) {
                 }
               />
             </View>
-
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Gender:</Text>
+              <TextInput
+                style={styles.input}
+                value={userDetails.gender}
+                onChangeText={(text) =>
+                  setUserDetails((prevState) => ({
+                    ...prevState,
+                    gender: text,
+                  }))
+                }
+              />
+            </View>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Maintaince:</Text>
               <TextInput

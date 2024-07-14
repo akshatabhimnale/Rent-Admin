@@ -92,6 +92,10 @@ const Tenant = () => {
               <td>${tenant.age}</td>
             </tr>
             <tr>
+              <td>Gender</td>
+              <td>${tenant.gender}</td>
+            </tr>
+            <tr>
               <td>Maintenance Amount</td>
               <td>${tenant.maintaince}</td>
             </tr>
