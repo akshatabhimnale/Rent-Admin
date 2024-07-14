@@ -291,6 +291,15 @@ const HomeScreen = () => {
           <Text style={styles.sidebarText}>Manage Tenants</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          onPress={() => handleSidebarItemPress("RentStatus")}
+          style={[
+            styles.sidebarItem,
+            activeNavItem === "RentStatus" && styles.activeSidebarItem,
+          ]}
+        >
+          <Text style={styles.sidebarText}>Rent Status</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
           onPress={() => handleSidebarItemPress("Tenant")}
           style={[
             styles.sidebarItem,
@@ -299,6 +308,7 @@ const HomeScreen = () => {
         >
           <Text style={styles.sidebarText}>Tenant Details</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() => handleSidebarItemPress("Expense")}
           style={[
@@ -316,16 +326,6 @@ const HomeScreen = () => {
           ]}
         >
           <Text style={styles.sidebarText}>Report</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => handleSidebarItemPress("RentStatus")}
-          style={[
-            styles.sidebarItem,
-            activeNavItem === "RentStatus" && styles.activeSidebarItem,
-          ]}
-        >
-          <Text style={styles.sidebarText}>Rent Status</Text>
         </TouchableOpacity>
       </Animated.View>
 

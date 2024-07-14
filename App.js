@@ -20,6 +20,7 @@ import ManageTenants from './SideCompo/ManageTenants.js';
 import ManageWings from './SideCompo/ManageWings.js';
 import Report from './SideCompo/Report';
 import Tenant from './SideCompo/Tenant';
+import RentStatus from './SideCompo/RentStatus';
 
 const Stack = createNativeStackNavigator();
 
@@ -40,6 +41,7 @@ export default function App() {
         <Stack.Screen name="Emptyflats" component={Emptyflats} />
         <Stack.Screen name="FlatsOnRent" component={FlatsOnRent} />
         <Stack.Screen name="Flats" component={Flats} />
+        <Stack.Screen name="RentStatus" component={RentStatus} />
         <Stack.Screen name="Pendingstatus" component={Pendingstatus} />
         <Stack.Screen name="Recieverent" component={Recieverent} />
         <Stack.Screen name="Totalbuildings" component={Totalbuildings} />
