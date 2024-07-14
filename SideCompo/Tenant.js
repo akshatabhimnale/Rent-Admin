@@ -294,6 +294,10 @@ const Tenant = () => {
                 <Text style={styles.boldLabel}>Age:</Text> {selectedTenant.age}
               </Text>
               <Text style={styles.detail}>
+                <Text style={styles.boldLabel}>Gender:</Text>{" "}
+                {selectedTenant.gender}
+              </Text>
+              <Text style={styles.detail}>
                 <Text style={styles.boldLabel}>Maintenance Amount:</Text>{" "}
                 {selectedTenant.maintaince}
               </Text>
