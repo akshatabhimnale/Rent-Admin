@@ -10,6 +10,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import RNPickerSelect from "react-native-picker-select";
 
 const API_URL = "https://stock-management-system-server-6mja.onrender.com";
 
@@ -18,6 +19,7 @@ const Flats = ({ route, navigation }) => {
   const [flats, setFlats] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [flatName, setFlatName] = useState("");
+  const [flatType, setFlatType] = useState("");
 
   useEffect(() => {
     fetch(`${API_URL}/api/flats/flats-by-wings/${societyId}`)
@@ -39,7 +41,7 @@ const Flats = ({ route, navigation }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name: flatName }),
+          body: JSON.stringify({ name: flatName, type: flatType }),
         }
       );
 
@@ -51,6 +53,7 @@ const Flats = ({ route, navigation }) => {
       setFlats([...flats, newFlat]);
       Alert.alert("Flat added successfully");
       setFlatName("");
+      setFlatType("");
       setIsModalVisible(false);
     } catch (error) {
       console.error("Error adding flat:", error);
@@ -106,6 +109,19 @@ const Flats = ({ route, navigation }) => {
               value={flatName}
               onChangeText={(text) => setFlatName(text)}
               editable={true}
+            />
+            <RNPickerSelect
+              onValueChange={(value) => setFlatType(value)}
+              items={[
+                { label: "1R", value: "1R" },
+                { label: "1RK", value: "1RK" },
+                { label: "1BHK", value: "1BHK" },
+                { label: "2BHK", value: "2BHK" },
+                { label: "3BHK", value: "3BHK" },
+              ]}
+              style={pickerSelectStyles}
+              value={flatType}
+              placeholder={{ label: "Select Flat Type", value: null }}
             />
             <View style={styles.buttonContainer}>
               <TouchableOpacity
@@ -250,5 +266,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+  },
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 4,
+    color: "black",
+    paddingRight: 30, // to ensure the text is never behind the icon
+    width: "100%",
+    marginBottom: 20,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: "gray",
+    borderRadius: 8,
+    color: "black",
+    paddingRight: 30, // to ensure the text is never behind the icon
+    width: "100%",
+    marginBottom: 20,
   },
 });

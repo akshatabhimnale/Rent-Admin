@@ -8,13 +8,28 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Button,
 } from "react-native";
+import { RadioButton } from "react-native-paper";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function Userdetails({ route }) {
   const { flat } = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   const [aadharBackPhotoUri, setAadharBackPhotoUri] = useState("");
   const [addUserModalVisible, setAddUserModalVisible] = useState(false);
+  const [date, setDate] = useState(new Date()); // Initialize date state
+  const [show, setShow] = useState(false);
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShow(Platform.OS === "ios");
+    setDate(currentDate);
+  };
+
+  const showMode = () => {
+    setShow(true);
+  };
   const [userDetails, setUserDetails] = useState({
     name: "",
     tenantPhotoUri: null,
@@ -46,7 +61,7 @@ export default function Userdetails({ route }) {
     reference_person1_age: "",
     reference_person2_age: "",
     agent_name: "",
-    rent_status: "paid", // Assuming a default value
+    rent_status: "pending", // Assuming a default value
   });
   const [userList, setUserList] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -84,7 +99,7 @@ export default function Userdetails({ route }) {
       reference_person1_age: "",
       reference_person2_age: "",
       agent_name: "",
-      rent_status: "paid", // Reset all fields on modal open
+      rent_status: "pending", // Reset all fields on modal open
     });
     setAddUserModalVisible(true);
   };
@@ -191,6 +206,15 @@ export default function Userdetails({ route }) {
 
   const handleSearch = (text) => {
     setSearchQuery(text);
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || userDetails.rent_form_date;
+    setShowDatePicker(false);
+    setUserDetails((prevState) => ({
+      ...prevState,
+      rent_form_date: currentDate,
+    }));
   };
 
   const filteredUserList = userList.filter((user) =>
@@ -398,16 +422,26 @@ export default function Userdetails({ route }) {
             </View>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Gender:</Text>
-              <TextInput
-                style={styles.input}
-                value={userDetails.gender}
-                onChangeText={(text) =>
-                  setUserDetails((prevState) => ({
-                    ...prevState,
-                    gender: text,
-                  }))
-                }
-              />
+              <View style={styles.radioGroup}>
+                <RadioButton.Group
+                  onValueChange={(value) =>
+                    setUserDetails((prevState) => ({
+                      ...prevState,
+                      gender: value,
+                    }))
+                  }
+                  value={userDetails.gender}
+                >
+                  <View style={styles.radioButtonContainer}>
+                    <RadioButton value="male" />
+                    <Text>Male</Text>
+                  </View>
+                  <View style={styles.radioButtonContainer}>
+                    <RadioButton value="female" />
+                    <Text>Female</Text>
+                  </View>
+                </RadioButton.Group>
+              </View>
             </View>
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Maintaince:</Text>
@@ -466,17 +500,15 @@ export default function Userdetails({ route }) {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Rent Form Date:</Text>
-              <TextInput
-                style={styles.input}
-                value={userDetails.rent_form_date}
-                onChangeText={(text) =>
-                  setUserDetails((prevState) => ({
-                    ...prevState,
-                    rent_form_date: text,
-                  }))
-                }
-              />
+              <Button onPress={showMode} title="Select Rent Start Date" />
+              {show && (
+                <DateTimePicker
+                  value={date} // Ensure date state is passed here
+                  mode="date"
+
+                  onChange={onChange}
+                />
+              )}
             </View>
 
             <View style={styles.inputContainer}>
@@ -755,17 +787,16 @@ export default function Userdetails({ route }) {
             )}
 
             <TouchableOpacity
+              style={[styles.button, styles.buttonSave]}
+              onPress={handleUploadPhotos}
+            >
+              <Text style={styles.buttonText}>Add</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[styles.button, styles.buttonClose]}
               onPress={() => setAddUserModalVisible(false)}
             >
               <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.button, styles.buttonSave]}
-              onPress={handleUploadPhotos}
-            >
-              <Text style={styles.buttonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -781,6 +812,10 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: "center",
     justifyContent: "center",
+  },
+  datePicker: {
+    width: "100%",
+    marginBottom: 20,
   },
   headerText: {
     fontSize: 24,
@@ -837,6 +872,16 @@ const styles = StyleSheet.create({
   activeStatus: {
     color: "green",
     fontWeight: "bold",
+  },
+  radioGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  radioButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 20,
   },
   inactiveStatus: {
     color: "red",
@@ -943,7 +988,7 @@ const styles = StyleSheet.create({
     alignItems: "center", // Center text in button
   },
   buttonClose: {
-    backgroundColor: "#cccccc", // Example color for close button
+    backgroundColor: "red", // Example color for close button
   },
   buttonSave: {
     backgroundColor: "green", // Example color for save button
@@ -955,5 +1000,15 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: "100%",
+  },
+  datePickerButton: {
+    backgroundColor: "#007bff",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  datePickerButtonText: {
+    color: "#fff",
   },
 });
