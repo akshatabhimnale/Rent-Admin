@@ -52,14 +52,7 @@ const ManageTenants = ({ navigation }) => {
     fetch(
       `https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`
     )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Network response was not ok. Status: ${response.status}`
-          );
-        }
-        return response.json();
-      })
+      .then((response) => response.json())
       .then((data) => {
         setTenantsByFlat((prev) => ({ ...prev, [flatId]: data || [] }));
       })
