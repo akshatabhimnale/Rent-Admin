@@ -27,7 +27,9 @@ const ManageTenants = ({ navigation }) => {
   }, []);
 
   const fetchSocieties = () => {
-    fetch("https://stock-management-system-server-6mja.onrender.com/api/societies")
+    fetch(
+      "https://stock-management-system-server-6mja.onrender.com/api/societies"
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -45,27 +47,33 @@ const ManageTenants = ({ navigation }) => {
   };
 
   const fetchTenantsForFlat = (flatId) => {
-    if (tenantsByFlat[flatId]) return; // Prevent fetching if already loaded
+    if (tenantsByFlat[flatId]) return;
 
-    fetch(`https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`)
+    fetch(
+      `https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`
+    )
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`Network response was not ok. Status: ${response.status}`);
+          throw new Error(
+            `Network response was not ok. Status: ${response.status}`
+          );
         }
         return response.json();
       })
       .then((data) => {
-        setTenantsByFlat((prev) => ({ ...prev, [flatId]: data }));
+        setTenantsByFlat((prev) => ({ ...prev, [flatId]: data || [] }));
       })
       .catch((error) => {
-        console.error('Error fetching tenants:', error.message);
+        console.error("Error fetching tenants:", error.message);
       });
   };
 
   const fetchWingsForAllSocieties = (societies) => {
     setLoadingWings(true);
     const fetchPromises = societies.map((society) =>
-      fetch(`https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${society._id}`)
+      fetch(
+        `https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${society._id}`
+      )
         .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
@@ -74,7 +82,9 @@ const ManageTenants = ({ navigation }) => {
         })
         .then((wings) => {
           const wingPromises = wings.map((wing) =>
-            fetch(`https://stock-management-system-server-6mja.onrender.com/api/flats/flats-by-wings/${wing._id}`)
+            fetch(
+              `https://stock-management-system-server-6mja.onrender.com/api/flats/flats-by-wings/${wing._id}`
+            )
               .then((response) => {
                 if (!response.ok) {
                   throw new Error("Network response was not ok");
@@ -127,87 +137,72 @@ const ManageTenants = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollView}>
         {societies.map((society) => (
           <View key={society._id} style={styles.societyContainer}>
-            <View style={styles.societyHeader}>
-              <Text style={styles.societyName}>
-                {loadingWings ? (
-                  <ActivityIndicator size="large" color="#6699CC" />
-                ) : wingsBySociety[society._id]?.length === 0 ? (
-                  <Text>No wings for this Society</Text>
-                ) : (
-                  wingsBySociety[society._id]?.map((wing) => (
-                    <View key={wing._id}>
-                      <View style={styles.flatListingContainer}>
-                        {wing.flats && wing.flats.length > 0 ? (
-                          <View style={styles.flatsContainer}>
-                            {wing.flats.map((flat) => {
-                              fetchTenantsForFlat(flat._id); // Fetch tenants for the current flat
-                              return (
-                                <View key={flat._id} style={styles.flatContainer}>
-                                  <Text style={styles.flatName}>
-                                    {society.name}/{wing.name}/{flat.name}
-                                  </Text>
-                                  <View style={styles.tenantListingContainer}>
-                                    {/* Tenant listing */}
-                                    {tenantsByFlat[flats._id]?.map((tenant) => (
-                                      <View
-                                        key={tenant._id}
-                                        style={{
-                                          flexDirection: "row",
-                                          alignItems: "center",
-                                          justifyContent: "space-between",
-                                          width: "100%",
-                                          shadowColor: "#000",
-                                          shadowOpacity: 0.1,
-                                          shadowOffset: { width: 0, height: 1 },
-                                          shadowRadius: 3,
-                                          elevation: 5,
-                                        }}
-                                      >
-                                        <View
-                                          style={{
-                                            flexDirection: "row",
-                                            alignItems: "center",
-                                            margin: 5,
-                                          }}
-                                        >
-                                          <Image
-                                            source={
-                                              tenant.gender === "female"
-                                                ? require("../assets/images/female.png")
-                                                : require("../assets/images/male.png")
-                                            }
-                                            style={styles.image}
-                                          />
-                                          <Text>{tenant.name}</Text>
-                                        </View>
-                                        <View style={styles.flatIcons}>
-                                          <TouchableOpacity
-                                            onPress={() => handleEditTenant(tenant)}
-                                          >
-                                            <FontAwesome name="edit" size={30} color="#6699CC" />
-                                          </TouchableOpacity>
-                                          <TouchableOpacity
-                                            onPress={() => handleDeleteTenant(tenant)}
-                                          >
-                                            <FontAwesome name="trash" size={30} color="red" />
-                                          </TouchableOpacity>
-                                        </View>
-                                      </View>
-                                    ))}
+            <Text style={styles.societyName}>{society.name}</Text>
+            {loadingWings ? (
+              <ActivityIndicator size="large" color="#6699CC" />
+            ) : (
+              wingsBySociety[society._id]?.map((wing) => (
+                <View key={wing._id} style={styles.flatListingContainer}>
+                  {wing.flats && wing.flats.length > 0 ? (
+                    wing.flats.map((flat) => {
+                      fetchTenantsForFlat(flat._id);
+                      return (
+                        <View key={flat._id} style={styles.flatContainer}>
+                          <Text style={styles.flatName}>
+                            {society.name}/{wing.name}/{flat.name}
+                          </Text>
+                          <View style={styles.tenantListingContainer}>
+                            {tenantsByFlat[flat._id] &&
+                            Array.isArray(tenantsByFlat[flat._id]) ? (
+                              tenantsByFlat[flat._id].map((tenant) => (
+                                <View
+                                  key={tenant._id}
+                                  style={styles.tenantContainer}
+                                >
+                                  <Image
+                                    source={
+                                      tenant.gender === "female"
+                                        ? require("../assets/images/female.png")
+                                        : require("../assets/images/male.png")
+                                    }
+                                    style={styles.image}
+                                  />
+                                  <Text>{tenant.name}</Text>
+                                  <View style={styles.flatIcons}>
+                                    <TouchableOpacity
+                                      onPress={() => handleEditTenant(tenant)}
+                                    >
+                                      <FontAwesome
+                                        name="edit"
+                                        size={30}
+                                        color="#6699CC"
+                                      />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                      onPress={() => handleDeleteTenant(tenant)}
+                                    >
+                                      <FontAwesome
+                                        name="trash"
+                                        size={30}
+                                        color="red"
+                                      />
+                                    </TouchableOpacity>
                                   </View>
                                 </View>
-                              );
-                            })}
+                              ))
+                            ) : (
+                              <Text>No tenants found</Text>
+                            )}
                           </View>
-                        ) : (
-                          <Text>No flats for this Wing</Text>
-                        )}
-                      </View>
-                    </View>
-                  ))
-                )}
-              </Text>
-            </View>
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <Text>No flats for this Wing</Text>
+                  )}
+                </View>
+              ))
+            )}
           </View>
         ))}
       </ScrollView>
@@ -232,7 +227,6 @@ const ManageTenants = ({ navigation }) => {
             />
             <TouchableOpacity
               onPress={() => {
-                // Update tenant logic here
                 setEditModalVisible(false);
               }}
             >
@@ -288,9 +282,6 @@ const styles = StyleSheet.create({
   societyContainer: {
     marginBottom: 20,
   },
-  societyHeader: {
-    marginBottom: 10,
-  },
   societyName: {
     fontSize: 18,
     fontWeight: "bold",
@@ -313,6 +304,17 @@ const styles = StyleSheet.create({
   },
   tenantListingContainer: {
     marginTop: 10,
+  },
+  tenantContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 5,
+    marginBottom: 10,
   },
   image: {
     width: 30,
