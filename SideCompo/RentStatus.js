@@ -17,12 +17,11 @@ const RentStatus = () => {
   const [selectedTenant, setSelectedTenant] = useState(null);
   const [modalMessage, setModalMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState("");
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  useEffect(() => {
-    // Fetch tenants with "Active" tenant status from backend
-    fetch(
-      "https://stock-management-system-server-6mja.onrender.com/api/tenants?status=Active"
-    )
+  const fetchActiveTenants = () => {
+    fetch("https://stock-management-system-server-6mja.onrender.com/api/tenants?tenant_status=Active")
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -36,6 +35,10 @@ const RentStatus = () => {
         console.error("Error fetching tenants:", error);
         setTenants([]);
       });
+  };
+
+  useEffect(() => {
+    fetchActiveTenants(); // Fetch active tenants on component mount
   }, []);
 
   const handleAction = (tenant, action) => {
@@ -52,30 +55,40 @@ const RentStatus = () => {
   const handleConfirmAction = (response) => {
     setModalVisible(false);
     if (confirmAction === "paid" && response) {
-      console.log(`${selectedTenant.name} has paid the rent.`);
-      // Implement the logic to mark the tenant as having paid the rent
-    } else if (confirmAction === "not-paid" && response) {
-      console.log(`${selectedTenant.name} did not pay the rent.`);
-      // Implement the logic to handle non-payment of rent
-    } else if (confirmAction === "deactivate" && response) {
-      console.log(`${selectedTenant.name} has been deactivated.`);
-      // Implement the logic to update tenant status to "Deactivated"
-      fetch(
-        `https://stock-management-system-server-6mja.onrender.com/api/tenants/${selectedTenant._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: "Deactivated" }),
-        }
-      )
+      fetch(`https://stock-management-system-server-6mja.onrender.com/api/tenants/${selectedTenant._id}/rent-paid`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
         .then((response) => response.json())
         .then((data) => {
-          if (data.success) {
+          if (data.message === "Rent marked as paid") {
             setTenants((prevTenants) =>
-              prevTenants.filter((tenant) => tenant._id !== selectedTenant._id)
+              prevTenants.map((tenant) =>
+                tenant._id === selectedTenant._id ? { ...tenant, rentPaid: true } : tenant
+              )
             );
+            setSuccessMessage(`${selectedTenant.name} has paid the rent.`);
+            setSuccessModalVisible(true);
+          } else {
+            console.error("Error marking rent as paid:", data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error marking rent as paid:", error);
+        });
+    } else if (confirmAction === "deactive" && response) {
+      fetch(`https://stock-management-system-server-6mja.onrender.com/api/tenants/${selectedTenant._id}/deactive`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.message === "Tenant deactivated") {
+            setTenants((prevTenants) => prevTenants.filter((tenant) => tenant._id !== selectedTenant._id));
           } else {
             console.error("Error updating tenant status:", data);
           }
@@ -87,17 +100,17 @@ const RentStatus = () => {
     setSelectedTenant(null);
   };
 
+  const closeSuccessModal = () => {
+    setSuccessModalVisible(false);
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Rent Status</Text>
       {tenants.map((tenant) => (
         <View key={tenant._id} style={styles.tenantContainer}>
           <Image
-            source={
-              tenant.gender === "female"
-                ? require("../assets/images/female.png")
-                : require("../assets/images/male.png")
-            }
+            source={tenant.gender === "female" ? require("../assets/images/female.png") : require("../assets/images/male.png")}
             style={styles.tenantImage}
           />
           <Text style={styles.tenantName}>{tenant.name}</Text>
@@ -105,9 +118,7 @@ const RentStatus = () => {
             <TouchableOpacity onPress={() => handleAction(tenant, "paid")}>
               <AntDesign name="check" size={30} color="green" />
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleAction(tenant, "deactivate")}
-            >
+            <TouchableOpacity onPress={() => handleAction(tenant, "deactive")}>
               <AntDesign name="close" size={30} color="red" />
             </TouchableOpacity>
           </View>
@@ -124,18 +135,24 @@ const RentStatus = () => {
           <View style={styles.modalView}>
             <Text style={styles.modalText}>{modalMessage}</Text>
             <View style={styles.modalButtons}>
-              <Button
-                title={confirmAction === "paid" ? "Yes" : "Deactivate"}
-                onPress={() => handleConfirmAction(true)}
-              />
-              <Button
-                title={confirmAction === "paid" ? "No" : "Cancel"}
-                onPress={() => handleConfirmAction(false)}
-              />
+              <Button title={confirmAction === "paid" ? "Yes" : "Deactive"} onPress={() => handleConfirmAction(true)} />
+              <Button title={confirmAction === "paid" ? "No" : "Cancel"} onPress={() => handleConfirmAction(false)} />
             </View>
           </View>
         </Modal>
       )}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={successModalVisible}
+        onRequestClose={closeSuccessModal}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>{successMessage}</Text>
+          <Button title="OK" onPress={closeSuccessModal} />
+        </View>
+      </Modal>
     </ScrollView>
   );
 };

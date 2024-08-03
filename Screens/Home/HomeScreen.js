@@ -240,8 +240,10 @@ const HomeScreen = () => {
         </TouchableWithoutFeedback>
       )}
 
+
       <Animated.View style={[styles.sidebar, { left: sidebarAnim }]}>
-        <View
+        <ScrollView>
+          <View
           style={{
             alignItems: "center",
             marginTop: 40,
@@ -250,6 +252,7 @@ const HomeScreen = () => {
             width: "100%",
           }}
         >
+          
           <Text style={{ fontSize: 20, fontWeight: "bold", color: "white" }}>
             MENU
           </Text>
@@ -309,14 +312,24 @@ const HomeScreen = () => {
           <Text style={styles.sidebarText}>Tenant Details</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => handleSidebarItemPress("Expense")}
+        {/* <TouchableOpacity
+          onPress={() => handleSidebarItemPress("AddPays")}
           style={[
             styles.sidebarItem,
-            activeNavItem === "Expense" && styles.activeSidebarItem,
+            activeNavItem === "AddPays" && styles.activeSidebarItem,
           ]}
         >
-          <Text style={styles.sidebarText}>Expenses</Text>
+          <Text style={styles.sidebarText}>Add Pays</Text>
+        </TouchableOpacity> */}
+
+        <TouchableOpacity
+          onPress={() => handleSidebarItemPress("Expenses")}
+          style={[
+            styles.sidebarItem,
+            activeNavItem === "Expenses" && styles.activeSidebarItem,
+          ]}
+        >
+          <Text style={styles.sidebarText}>Update Pays</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleSidebarItemPress("Report")}
@@ -325,9 +338,10 @@ const HomeScreen = () => {
             activeNavItem === "Report" && styles.activeSidebarItem,
           ]}
         >
-          <Text style={styles.sidebarText}>Report</Text>
-        </TouchableOpacity>
+          <Text style={styles.sidebarText}>Flat Type</Text>
+        </TouchableOpacity></ScrollView>
       </Animated.View>
+     
 
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.content}>

@@ -41,7 +41,7 @@ const Flats = ({ route, navigation }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name: flatName, type: flatType }),
+          body: JSON.stringify({ name: flatName, flat_type: flatType }),
         }
       );
 

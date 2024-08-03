@@ -14,20 +14,12 @@ import {
 
 const ManageTenants = ({ navigation }) => {
   const [tenantsByFlat, setTenantsByFlat] = useState({});
-  const [tenants, setTenants] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [societies, setSocieties] = useState([]);
   const [wingsBySociety, setWingsBySociety] = useState({});
-  const [wingName, setWingName] = useState("");
+  const [loadingWings, setLoadingWings] = useState(false);
   const [fetchError, setFetchError] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [selectedWing, setSelectedWing] = useState(null);
-  const [selectedFlat, setSelectedFlat] = useState(null);
-  const [loadingWings, setLoadingWings] = useState(false);
-  const [addModalVisible, setAddModalVisible] = useState(false);
-  const [flatName, setFlatName] = useState("");
   const [selectedTenant, setSelectedTenant] = useState(null);
 
   useEffect(() => {
@@ -35,9 +27,7 @@ const ManageTenants = ({ navigation }) => {
   }, []);
 
   const fetchSocieties = () => {
-    fetch(
-      "https://stock-management-system-server-6mja.onrender.com/api/societies"
-    )
+    fetch("https://stock-management-system-server-6mja.onrender.com/api/societies")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -46,7 +36,6 @@ const ManageTenants = ({ navigation }) => {
       })
       .then((data) => {
         setSocieties(data);
-        setFetchError(null);
         fetchWingsForAllSocieties(data);
       })
       .catch((error) => {
@@ -57,12 +46,11 @@ const ManageTenants = ({ navigation }) => {
 
   const fetchTenantsForFlat = (flatId) => {
     if (tenantsByFlat[flatId]) return; // Prevent fetching if already loaded
-    fetch(
-      `https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`
-    )
+
+    fetch(`https://stock-management-system-server-6mja.onrender.com/api/tenants/tenants-by-flat/${flatId}`)
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(`Network response was not ok. Status: ${response.status}`);
         }
         return response.json();
       })
@@ -70,16 +58,14 @@ const ManageTenants = ({ navigation }) => {
         setTenantsByFlat((prev) => ({ ...prev, [flatId]: data }));
       })
       .catch((error) => {
-        console.error("Error fetching tenants:", error);
+        console.error('Error fetching tenants:', error.message);
       });
   };
 
   const fetchWingsForAllSocieties = (societies) => {
     setLoadingWings(true);
     const fetchPromises = societies.map((society) =>
-      fetch(
-        `https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${society._id}`
-      )
+      fetch(`https://stock-management-system-server-6mja.onrender.com/api/wings/wings-by-society/${society._id}`)
         .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
@@ -88,9 +74,7 @@ const ManageTenants = ({ navigation }) => {
         })
         .then((wings) => {
           const wingPromises = wings.map((wing) =>
-            fetch(
-              `https://stock-management-system-server-6mja.onrender.com/api/flats/flats-by-wings/${wing._id}`
-            )
+            fetch(`https://stock-management-system-server-6mja.onrender.com/api/flats/flats-by-wings/${wing._id}`)
               .then((response) => {
                 if (!response.ok) {
                   throw new Error("Network response was not ok");
@@ -158,16 +142,13 @@ const ManageTenants = ({ navigation }) => {
                             {wing.flats.map((flat) => {
                               fetchTenantsForFlat(flat._id); // Fetch tenants for the current flat
                               return (
-                                <View
-                                  key={flat._id}
-                                  style={styles.flatContainer}
-                                >
+                                <View key={flat._id} style={styles.flatContainer}>
                                   <Text style={styles.flatName}>
                                     {society.name}/{wing.name}/{flat.name}
                                   </Text>
                                   <View style={styles.tenantListingContainer}>
                                     {/* Tenant listing */}
-                                    {tenantsByFlat[flat._id]?.map((tenant) => (
+                                    {tenantsByFlat[flats._id]?.map((tenant) => (
                                       <View
                                         key={tenant._id}
                                         style={{
@@ -201,40 +182,25 @@ const ManageTenants = ({ navigation }) => {
                                         </View>
                                         <View style={styles.flatIcons}>
                                           <TouchableOpacity
-                                            onPress={() =>
-                                              handleEditTenant(tenant)
-                                            }
+                                            onPress={() => handleEditTenant(tenant)}
                                           >
-                                            <FontAwesome
-                                              name="edit"
-                                              size={30}
-                                              color="#6699CC"
-                                            />
+                                            <FontAwesome name="edit" size={30} color="#6699CC" />
                                           </TouchableOpacity>
                                           <TouchableOpacity
-                                            onPress={() =>
-                                              handleDeleteTenant(tenant)
-                                            }
+                                            onPress={() => handleDeleteTenant(tenant)}
                                           >
-                                            <FontAwesome
-                                              name="trash"
-                                              size={30}
-                                              color="red"
-                                            />
+                                            <FontAwesome name="trash" size={30} color="red" />
                                           </TouchableOpacity>
                                         </View>
                                       </View>
                                     ))}
                                   </View>
-                                  <View style={styles.divider} />
                                 </View>
                               );
                             })}
                           </View>
                         ) : (
-                          <Text style={styles.noFlatsText}>
-                            No Flats Available
-                          </Text>
+                          <Text>No flats for this Wing</Text>
                         )}
                       </View>
                     </View>
@@ -255,40 +221,26 @@ const ManageTenants = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Tenant Details</Text>
+            <Text>Edit Tenant</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Name"
               value={selectedTenant?.name}
               onChangeText={(text) =>
-                setSelectedTenant({ ...selectedTenant, name: text })
+                setSelectedTenant((prev) => ({ ...prev, name: text }))
               }
-            />
-            <TextInput
+              placeholder="Tenant Name"
               style={styles.input}
-              placeholder="Phone Number"
-              value={selectedTenant?.phoneNumber}
-              onChangeText={(text) =>
-                setSelectedTenant({ ...selectedTenant, phoneNumber: text })
-              }
             />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => setEditModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.saveButton]}
-                onPress={() => {
-                  // Save changes logic here
-                  setEditModalVisible(false);
-                }}
-              >
-                <Text style={styles.buttonText}>Save</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              onPress={() => {
+                // Update tenant logic here
+                setEditModalVisible(false);
+              }}
+            >
+              <Text>Save</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+              <Text>Cancel</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -302,25 +254,18 @@ const ManageTenants = ({ navigation }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Delete Tenant</Text>
             <Text>Are you sure you want to delete this tenant?</Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => setDeleteModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.deleteButton]}
-                onPress={() => {
-                  // Delete tenant logic here
-                  setDeleteModalVisible(false);
-                }}
-              >
-                <Text style={styles.buttonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              onPress={() => {
+                // Delete tenant logic here
+                setDeleteModalVisible(false);
+              }}
+            >
+              <Text>Yes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setDeleteModalVisible(false)}>
+              <Text>No</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -331,78 +276,53 @@ const ManageTenants = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#fff",
+    padding: 10,
   },
   headerText: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 16,
   },
-  errorText: {
-    color: "red",
-    marginBottom: 16,
+  scrollView: {
+    paddingVertical: 10,
   },
   societyContainer: {
     marginBottom: 20,
   },
   societyHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 5,
+    marginBottom: 10,
   },
   societyName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
   },
   flatListingContainer: {
-    marginVertical: 10,
+    marginBottom: 10,
   },
   flatsContainer: {
-    marginVertical: 5,
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   flatContainer: {
-    marginBottom: 5,
-    padding: 10,
-    backgroundColor: "#ffffff",
-    borderRadius: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
-    elevation: 5,
+    marginRight: 10,
+    marginBottom: 10,
+    width: "100%",
   },
   flatName: {
     fontSize: 16,
     fontWeight: "bold",
   },
   tenantListingContainer: {
-    marginVertical: 10,
+    marginTop: 10,
   },
   image: {
-    width: 50,
-    height: 70,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     marginRight: 10,
   },
   flatIcons: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#ccc",
-    marginVertical: 10,
-  },
-  noFlatsText: {
-    color: "#888",
-    fontStyle: "italic",
-  },
-  scrollView: {
-    paddingBottom: 20,
   },
   modalContainer: {
     flex: 1,
@@ -411,49 +331,20 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    width: "80%",
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
+    width: "80%",
   },
   input: {
-    width: "100%",
-    padding: 10,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    marginBottom: 20,
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  button: {
-    flex: 1,
     padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    marginHorizontal: 5,
+    marginVertical: 10,
   },
-  cancelButton: {
-    backgroundColor: "#ccc",
-  },
-  saveButton: {
-    backgroundColor: "#6699CC",
-  },
-  deleteButton: {
-    backgroundColor: "red",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
+  errorText: {
+    color: "red",
   },
 });
 
