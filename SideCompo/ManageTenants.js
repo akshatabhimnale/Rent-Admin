@@ -122,7 +122,6 @@ const ManageTenants = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>Manage Tenants</Text>
       {fetchError && (
         <Text style={styles.errorText}>Error fetching data: {fetchError}</Text>
       )}
@@ -161,11 +160,13 @@ const ManageTenants = ({ navigation }) => {
                                       }
                                       style={styles.image}
                                     />
-                                    <Text style={styles.flatName}>
+                                    <Text style={styles.tenantName}>
                                       {tenant.name}
                                     </Text>
                                   </View>
-                                  <View>
+                                  <View style={styles.tenantListRight}>
+                                    <Text>{flat.flat_type}</Text>
+
                                     <View style={styles.flatIcons}>
                                       <TouchableOpacity
                                         onPress={() => handleEditTenant(tenant)}
@@ -201,9 +202,11 @@ const ManageTenants = ({ navigation }) => {
                   ) : (
                     <Text>No flats for this Wing</Text>
                   )}
+                  
                 </View>
               ))
             )}
+            <View style={styles.divider} />
           </View>
         ))}
       </ScrollView>
@@ -272,6 +275,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    backgroundColor:"#fff",
   },
   headerText: {
     fontSize: 24,
@@ -283,9 +287,15 @@ const styles = StyleSheet.create({
   societyContainer: {
     marginBottom: 20,
   },
+   divider: {
+    height: 1,
+    backgroundColor: "#DDD",
+    marginVertical: 10,
+  },
   societyName: {
     fontSize: 18,
     fontWeight: "bold",
+   
   },
   flatListingContainer: {
     marginBottom: 10,
@@ -320,7 +330,12 @@ const styles = StyleSheet.create({
   tenant: {
     display: "flex",
     flexDirection: "row",
-    alignItems:"center"
+    alignItems: "center",
+  },
+  tenantName: {
+    fontSize: 16,
+    color: "#009E60",
+    fontWeight: "700",
   },
   image: {
     width: 50,
@@ -328,11 +343,15 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginRight: 10,
   },
+  tenantListRight: {
+    flexDirection: "row",
+    gap: 10,
+  },
   flatIcons: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap:10,
+    gap: 10,
   },
   modalContainer: {
     flex: 1,
