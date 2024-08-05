@@ -152,34 +152,42 @@ const ManageTenants = ({ navigation }) => {
                                   key={tenant._id}
                                   style={styles.tenantContainer}
                                 >
-                                  <Image
-                                    source={
-                                      tenant.gender === "female"
-                                        ? require("../assets/images/female.png")
-                                        : require("../assets/images/male.png")
-                                    }
-                                    style={styles.image}
-                                  />
-                                  <Text>{tenant.name}</Text>
-                                  <View style={styles.flatIcons}>
-                                    <TouchableOpacity
-                                      onPress={() => handleEditTenant(tenant)}
-                                    >
-                                      <FontAwesome
-                                        name="edit"
-                                        size={30}
-                                        color="#6699CC"
-                                      />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                      onPress={() => handleDeleteTenant(tenant)}
-                                    >
-                                      <FontAwesome
-                                        name="trash"
-                                        size={30}
-                                        color="red"
-                                      />
-                                    </TouchableOpacity>
+                                  <View style={styles.tenant}>
+                                    <Image
+                                      source={
+                                        tenant.gender === "female"
+                                          ? require("../assets/images/female.png")
+                                          : require("../assets/images/male.png")
+                                      }
+                                      style={styles.image}
+                                    />
+                                    <Text style={styles.flatName}>
+                                      {tenant.name}
+                                    </Text>
+                                  </View>
+                                  <View>
+                                    <View style={styles.flatIcons}>
+                                      <TouchableOpacity
+                                        onPress={() => handleEditTenant(tenant)}
+                                      >
+                                        <FontAwesome
+                                          name="edit"
+                                          size={30}
+                                          color="#6699CC"
+                                        />
+                                      </TouchableOpacity>
+                                      <TouchableOpacity
+                                        onPress={() =>
+                                          handleDeleteTenant(tenant)
+                                        }
+                                      >
+                                        <FontAwesome
+                                          name="trash"
+                                          size={30}
+                                          color="red"
+                                        />
+                                      </TouchableOpacity>
+                                    </View>
                                   </View>
                                 </View>
                               ))
@@ -309,15 +317,22 @@ const styles = StyleSheet.create({
     elevation: 5,
     marginBottom: 10,
   },
+  tenant: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems:"center"
+  },
   image: {
-    width: 30,
-    height: 30,
+    width: 50,
+    height: 70,
     borderRadius: 15,
     marginRight: 10,
   },
   flatIcons: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    gap:10,
   },
   modalContainer: {
     flex: 1,
